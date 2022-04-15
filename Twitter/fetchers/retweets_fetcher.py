@@ -6,9 +6,9 @@ import pandas as pd
 import math
 from helpers.Api import connect_tweepy, process_tweets_and_users, save_state
 
-USERS_TWEETS = "../../data/test_tweets2.csv"
-RETWEETS = "../../data/retweets_v2.csv"
-RETWEETS_USERS = "../../data/retweets_users_v2.csv"
+USERS_TWEETS = "../../data/raw_tweets.csv"
+RETWEETS = "../../data/retweets.csv"
+RETWEETS_USERS = "../../data/retweets_users.csv"
 QUERY_MAX_RESULTS = 500
 MAX_QUERY_SIZE = 1024
 
@@ -41,8 +41,7 @@ def get_tweets_retweets(tweepy_api, df_retweets):
         f_tweets = [t for tweet in tweets for t in tweet]
         f_users = [u for user in users for u in user]
         retweets, retweets_users = save_state(f_tweets, f_users, retweets, retweets_users,
-                                              (i % 20000 == 0) or (j == total_requests), RETWEETS, RETWEETS_USERS)
-
+                                              (i % 10000 == 0) or (j == total_requests), RETWEETS, RETWEETS_USERS)
 
 
 def tweets_to_fetch_count(df_retweets, i, j):
@@ -79,6 +78,8 @@ def prepare_fetch_query(tweets_ids, i):
 def api_fetch(endpoint, query, max_results, max_limit):
     tweets_collected = []
     users_collected = []
+    start = datetime.datetime(2020, 1, 1)
+    end = datetime.datetime(2022, 4, 11)
     while True:
         try:
             for response in tweepy.Paginator(endpoint,
@@ -87,6 +88,8 @@ def api_fetch(endpoint, query, max_results, max_limit):
                                                            'referenced_tweets', 'public_metrics', 'source', 'lang'],
                                              user_fields=['created_at', 'verified', 'public_metrics'],
                                              expansions=['author_id'],
+                                             start_time=start,
+                                             end_time=end,
                                              max_results=max_results, limit=max_limit):
                 print("Response collected...\n")
                 tweets, users = process_tweets_and_users(response)

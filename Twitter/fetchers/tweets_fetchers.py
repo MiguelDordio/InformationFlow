@@ -6,8 +6,8 @@ from time import sleep
 import tweepy
 from helpers.Api import connect_tweepy, process_tweets_and_users, save_state
 
-FILE_TWEETS = "../../data/test_tweets2.csv"
-FILE_USERS = "../../data/test_users2.csv"
+FILE_TWEETS = "../../data/raw_tweets.csv"
+FILE_USERS = "../../data/raw_users.csv"
 QUERY_MAX_RESULTS = 100
 
 
@@ -100,7 +100,7 @@ def get_timeline_tweets(query, start, end, total_tweets):
 if __name__ == '__main__':
     q = "lang:en -is:retweet -is:reply -the the"
     q2 = "lang:en place_country:US -url -is:retweet -is:reply -the the"
-    max_tweets = 10
-    d1 = datetime.datetime(2022, 3, 20)
-    d2 = datetime.datetime(2022, 3, 20)
+    max_tweets = 1000000
+    d1 = datetime.datetime(2020, 1, 1)
+    d2 = datetime.datetime(2021, 12, 31)
     get_timeline_tweets(q2, d1, d2, max_tweets)
