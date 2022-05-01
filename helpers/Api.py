@@ -41,6 +41,17 @@ def process_tweet_user(tweet_data, user_data):
     return processed_tweet, processed_user
 
 
+def process_users(response):
+    processed_users = []
+    if response.data is not None:
+        for user in response.data:
+            processed_users.append(extract_user(user))
+    else:
+        print("Fetch had no data")
+
+    return processed_users
+
+
 def process_tweets_and_users(response):
     processed_tweets = []
     processed_users = []
