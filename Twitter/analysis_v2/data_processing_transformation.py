@@ -154,13 +154,13 @@ def tweet_popularity_label(retweet_count, quote_count):
 
 def get_day_phase(hour):
     if 0 <= hour < 7:
-        return "Dawn"
+        return "Middle of the night"
     elif 7 <= hour < 13:
         return "Morning"
     elif 13 <= hour < 16:
         return "Afternoon"
     elif 16 <= hour < 20:
-        return "Evening"
+        return "Dusk"
     elif 20 <= hour < 24:
         return "Night"
 
