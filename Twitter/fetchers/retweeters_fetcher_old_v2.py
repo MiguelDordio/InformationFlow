@@ -6,7 +6,7 @@ import pandas as pd
 import math
 from helpers.Api import connect_tweepy, process_tweets_and_users, save_state, process_users
 
-USERS_TWEETS = "../../data/raw_tweets.csv"
+USERS_TWEETS = "../../data/tweets/raw_tweets_2019.csv"
 RETWEETS_USERS = "../../data/true_retweets_users.csv"
 QUERY_MAX_RESULTS = 500
 MAX_QUERY_SIZE = 1024
@@ -20,7 +20,7 @@ def fetch_retweeters():
     df_retweets = df_retweets[:10]
 
     print("Retweeters will be collected for", len(df_retweets['tweet_id'].tolist()), "tweets\n")
-    get_tweets_retweets(tweepy_api, df_retweets)
+    #get_tweets_retweets(tweepy_api, df_retweets)
     print("Job done, check files")
 
 

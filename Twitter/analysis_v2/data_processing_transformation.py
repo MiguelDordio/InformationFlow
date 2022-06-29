@@ -194,12 +194,20 @@ def get_users_seniority(df):
 def outliers(df):
     outliers_filter = (((df['followers'] < 10000) & (df['following'] < 70000))
                       & ((df['retweet_count'] < 100) & (df['like_count'] < 4000) & (df['seniority'] < 17)))
-    df_no_outliers = df[outliers_filter].copy()
+    return outliers_removal(df, outliers_filter)
 
+
+def outliers_removal(df, outliers_filter):
+    df_no_outliers = df[outliers_filter].copy()
     print('Percentage of data kept after removing outliers:', np.round(df_no_outliers.shape[0] / df.shape[0], 4) * 100,
           '%')
     print('Percentage of data removed:', np.round((1 - (df_no_outliers.shape[0] / df.shape[0])) * 100, 4), '%')
-
+    print("Size after outlier removal:", df_no_outliers.shape[0])
+    df_rets = df[df['retweet_count'] > 0]
+    df_rets_out = df_no_outliers[df_no_outliers['retweet_count'] > 0]
+    print("N. of tweets with atleast 1 retweet:", df_no_outliers[df_no_outliers['retweet_count'] > 0].shape[0])
+    print('Percentage of tweets with atleast 1 retweet removed:',
+          np.round((1 - (df_rets_out.shape[0] / df_rets.shape[0])) * 100, 4), '%')
     return df_no_outliers
 
 
@@ -236,5 +244,10 @@ def process_and_transform():
 
     df = outliers(df_complete)
 
-    df.to_csv('../../data/processed_' + str(df['year'].iloc[0]) + '.csv', sep=',', date_format='%Y-%m-%d %H:%M:%S')
+    year = df.iloc[0]['timestamp'].year
+    print(year)
+    location = FINAL_DATASET + str(year) + '.csv'
+    print(location)
+
+    df.to_csv(location, sep=',', date_format='%Y-%m-%d %H:%M:%S')
 

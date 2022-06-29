@@ -22,10 +22,10 @@ def fetch_retweeters():
 
     # df_tweets = df_tweets[:20]
     df_tweets = df_tweets[df_tweets['topics'] != '[]']
+    df_tweets['timestamp'] = pd.to_datetime(df_tweets['timestamp'])
     df_retweets = df_tweets[df_tweets['retweet_count'] > 0]
-    df_retweets['timestamp'] = pd.to_datetime(df_retweets['timestamp'])
 
-    current_data_year = df_tweets.iloc[0]['timestamp'].year
+    current_data_year = df_retweets.iloc[0]['timestamp'].year
 
     print("Retweeters will be collected for", len(df_retweets['tweet_id'].tolist()), "tweets\n")
     get_tweets_retweets(tweepy_api, df_retweets, current_data_year)
@@ -39,7 +39,7 @@ def get_tweets_retweets(tweepy_api, df_retweets, current_data_year):
     total_requests = len(tweets_ids)
 
     start_date = datetime.datetime(current_data_year, 1, 1)
-    end_date = datetime.datetime.now()
+    end_date = datetime.datetime.now() - datetime.timedelta(days=1)
     retweets_file = RETWEETS + "_" + str(current_data_year) + ".csv"
     retweets_users_file = RETWEETS_USERS + "_" + str(current_data_year) + ".csv"
 
@@ -76,8 +76,8 @@ def prepare_fetch_query(tweets_ids, i):
     base_query_build = "url:"
     base_filters = ") (is:retweet OR is:quote)"
     tweet_id = ""
-    while i < len(tweets_ids) and len(query) + len(base_query_build) + len(tweet_id) < MAX_QUERY_SIZE - len(
-            base_filters):
+    while i < len(tweets_ids) and len(query) + len(base_query_build) + len(tweet_id) < MAX_QUERY_SIZE - \
+            len(base_filters):
         tweet_id = str(tweets_ids[i])
         query += base_query_build + tweet_id + next_item_separator
         i += 1
