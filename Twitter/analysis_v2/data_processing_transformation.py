@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import datetime
+import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
@@ -11,7 +12,8 @@ FILE_USERS = "../../data/raw_users.csv"
 FILE_USERS_TWEETS = "../../data/raw_tweets.csv"
 FILE_RETWEETERS = "../../data/retweets.csv"
 FILE_RETWEETERS_USERS = "../../data/retweets_users.csv"
-FINAL_DATASET = "../../data/tweets_2020_2021.csv"
+FINAL_DATASET = "../../data/processed_data/tweets_"
+FINAL_DATASET_RETWEETS_INFO = "../../data/processed_data/retweets_"
 
 
 
@@ -32,17 +34,18 @@ def calculate_tweet_reach(df_tweets, df_users):
     # remove NANs
     df_retweets_info = df_retweets_info[df_retweets_info['referenced_tweets'].notna()]
 
-    df_retweets_info['ref_tweed_id'] = df_retweets_info['referenced_tweets'].apply(
-        lambda ref_tweet: get_ref_tweet_id(ref_tweet))
+    df_retweets_info['ref_tweed_id'] = [get_ref_tweet_id(ref_tweet) for ref_tweet in
+                                        df_retweets_info['referenced_tweets']]
 
-    df_tweets['ref_tweed_id'] = df_tweets['referenced_tweets'].apply(lambda ref_tweet: get_ref_tweet_id(ref_tweet))
+    df_tweets['ref_tweed_id'] = [get_ref_tweet_id(ref_tweet) for ref_tweet in df_tweets['referenced_tweets']]
     # converting the reference ids that exist to int
     df_tweets['ref_tweed_id'] = pd.to_numeric(df_tweets['ref_tweed_id'], errors='coerce').fillna(0).astype(np.int64)
 
-    df_tweets['reach'] = df_tweets.apply(
-        lambda tweet_row: calculate_tweet_reach(tweet_row['tweet_id'], tweet_row['user_id'], tweet_row['topics'],
-                                                tweet_row['retweet_count'], tweet_row['ref_tweed_id'], df_users,
-                                                df_retweets_info), axis=1)
+    df_tweets['reach'] = [calculate_tweet_reach(row[0], row[1], row[2], row[3], row[4]) for row in
+                          zip(df_tweets['tweet_id'], df_tweets['user_id'], df_tweets['topics'],
+                              df_tweets['retweet_count'], df_tweets['ref_tweed_id'])]
+
+    return df_retweets_info
 
 
 def get_ref_tweet_id(ref_tweets):
@@ -65,15 +68,14 @@ def calculate_tweet_reach(tweet_id, user_id, topics, retweets_count, ref_tweed_i
 
 def process_topics(df_tweets):
     print("Topics: get topics")
-    df_tweets['topics'] = df_tweets['topics'].apply(lambda topics: process_topic(topics))
-    df_tweets['topics_ids'] = df_tweets['topics_ids'].apply(lambda topics: process_topic(topics))
+    df_tweets['topics'] = [process_topic(topics) for topics in df_tweets['topics']]
+    df_tweets['topics_ids'] = [process_topic(topics_ids) for topics_ids in df_tweets['topics_ids']]
 
-    # grouping topics
     print("Topics: group topics by category")
-    df_tweets['topics_cleaned'] = df_tweets['topics'].apply(lambda topic: group_topics(topic))
+    df_tweets['topics_cleaned'] = [group_topics(topic) for topic in df_tweets['topics']]
 
     print("Topics: removing NaNs and int conversion")
-    df_tweets['topics_ids'].fillna(value=0, inplace=True)
+    df_tweets['topics_ids'].fillna(value=-1, inplace=True)
     df_tweets['topics_ids'] = df_tweets['topics_ids'].apply(lambda x: int(x))
     df_tweets['topics'].fillna(value="", inplace=True)
 
@@ -126,7 +128,7 @@ def group_topics(topic):
 
 def sentiment_classification(df_tweets):
     sid_obj = SentimentIntensityAnalyzer()
-    df_tweets['sentiment'] = df_tweets['text'].apply(lambda tweet_text: sentiment_scores(tweet_text, False, sid_obj))
+    df_tweets['sentiment'] = [sentiment_scores(tweet_text, False, sid_obj) for tweet_text in df_tweets['text']]
 
 
 def sentiment_scores(sentence, prints, sid_obj):
@@ -145,11 +147,32 @@ def sentiment_scores(sentence, prints, sid_obj):
         return "Neutral"
 
 
+def hashtags(df):
+    df['hashtags'] = [has_hashtags(text) for text in df['text']]
+
+
+def has_hashtags(text):
+    return len(re.findall(r'\B#\w*[a-zA-Z]+\w*', text)) > 0
+
+
+def popularity(df):
+    df['popularity'] = [tweet_popularity_label(ret, qou) for ret, qou in zip(df['retweet_count'], df['quote_count'])]
+
+
 def tweet_popularity_label(retweet_count, quote_count):
     if retweet_count > 0 or quote_count > 0:
         return 1
     else:
         return 0
+
+
+def merge_tweets_and_users(df_tweets, df_users):
+    return pd.merge(df_tweets[
+                               ['tweet_id', 'text', 'timestamp', 'user_id', 'like_count', 'retweet_count',
+                                'quote_count',
+                                'reply_count', 'reach', 'topics_ids', 'topics', 'sentiment', 'popularity']],
+                           df_users[['user_id', 'followers', 'following', 'tweet_count', 'verified', 'created_at']],
+                           on="user_id").reset_index()
 
 
 def get_day_phase(hour):
@@ -211,6 +234,16 @@ def outliers_removal(df, outliers_filter):
     return df_no_outliers
 
 
+def save_to_csv(df, df_retweets_info, dataset_file, retweets_info_file):
+    year = df.iloc[0]['timestamp'].year
+    location = dataset_file + str(year) + '.csv'
+    location_retweets = retweets_info_file + str(year) + '.csv'
+    print("Saving final dataset in", location, "for year:", year)
+    print("Saving final retweets info dataset in", location_retweets, "for year:", year)
+    df.to_csv(location, sep=',', date_format='%Y-%m-%d %H:%M:%S')
+    df_retweets_info.to_csv(location_retweets, sep=',', date_format='%Y-%m-%d %H:%M:%S')
+
+
 def process_and_transform():
     df_users = pd.read_csv(filepath_or_buffer=FILE_USERS, sep=",")
     df_tweets = pd.read_csv(filepath_or_buffer=FILE_USERS_TWEETS, sep=",")
@@ -221,22 +254,18 @@ def process_and_transform():
     # delete duplicate users
     df_users = df_users.drop_duplicates(subset=['user_id'], keep="first")
 
-    calculate_tweet_reach(df_tweets, df_users)
+    df_retweets_info = calculate_tweet_reach(df_tweets, df_users)
 
     process_topics(df_tweets)
 
     sentiment_classification(df_tweets)
 
-    df_tweets['popularity'] = df_tweets.apply(
-        lambda row: tweet_popularity_label(row['retweet_count'], row['quote_count']), axis=1)
+    hashtags(df_tweets)
+
+    popularity(df_tweets)
 
     # merging tweets data with respective users info
-    df_complete = pd.merge(df_tweets[
-                                ['tweet_id', 'text', 'timestamp', 'user_id', 'like_count', 'retweet_count',
-                                 'quote_count',
-                                 'reply_count', 'reach', 'topics_ids', 'topics', 'sentiment', 'popularity']],
-                            df_users[['user_id', 'followers', 'following', 'tweet_count', 'verified', 'created_at']],
-                            on="user_id").reset_index()
+    df_complete = merge_tweets_and_users(df_tweets, df_users)
 
     df_complete['timestamp'] = pd.to_datetime(df_complete['timestamp'])
 
@@ -244,10 +273,7 @@ def process_and_transform():
 
     df = outliers(df_complete)
 
-    year = df.iloc[0]['timestamp'].year
-    print(year)
-    location = FINAL_DATASET + str(year) + '.csv'
-    print(location)
+    save_to_csv(df, df_retweets_info, FINAL_DATASET, FINAL_DATASET_RETWEETS_INFO)
 
-    df.to_csv(location, sep=',', date_format='%Y-%m-%d %H:%M:%S')
+
 
