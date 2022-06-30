@@ -8,12 +8,14 @@ from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
 
 
-FILE_USERS = "../../data/raw_users.csv"
-FILE_USERS_TWEETS = "../../data/raw_tweets.csv"
-FILE_RETWEETERS = "../../data/retweets.csv"
-FILE_RETWEETERS_USERS = "../../data/retweets_users.csv"
-FINAL_DATASET = "../../data/processed_data/tweets_"
-FINAL_DATASET_RETWEETS_INFO = "../../data/processed_data/retweets_"
+FILE_USERS = "../../data/tweets/raw_users_2019.csv"
+FILE_USERS_TWEETS = "../../data/tweets/raw_tweets_2019.csv"
+
+FILE_RETWEETERS = "../../data/retweets/retweets_2019.csv"
+FILE_RETWEETERS_USERS = "../../data/retweets/retweets_users_2019.csv"
+
+FINAL_DATASET = "../../data/processed_tweets/tweets_"
+FINAL_DATASET_RETWEETS_INFO = "../../data/processed_retweets/retweets_info_"
 
 
 

@@ -9,7 +9,7 @@ import seaborn as sns
 sns.set()
 
 
-DATASETS_PATH = "../../data/processed_data/"
+DATASETS_PATH = "../../data/processed_tweets/"
 
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 week_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
