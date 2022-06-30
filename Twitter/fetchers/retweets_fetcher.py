@@ -10,8 +10,8 @@ import math
 from helpers.Api import connect_tweepy, process_tweets_and_users, save_state
 
 USERS_TWEETS = "../../data/tweets/raw_tweets_2019.csv"
-RETWEETS = "../../data/tweets/retweets"
-RETWEETS_USERS = "../../data/tweets/retweets_users"
+RETWEETS = "../../data/retweets/retweets"
+RETWEETS_USERS = "../../data/retweets/retweets_users"
 QUERY_MAX_RESULTS = 500
 MAX_QUERY_SIZE = 1024
 
