@@ -1,13 +1,13 @@
+import math
 from os import walk
 
 import joblib
 import numpy as np
 import pandas as pd
 import datetime
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 import plotly.express as px
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.preprocessing import StandardScaler
 import plotly
 
 
@@ -15,7 +15,7 @@ num_folds = 7
 seed = 7
 scoring = 'accuracy'
 validation_size = 0.70
-BASE_FOLDER = "../../data/processed_data"
+BASE_FOLDER = "../../data/processed_tweets/"
 vars = ['like_count', 'retweet_count', 'quote_count', 'reply_count', 'reach', 'topics_ids', 'sentiment_enc', 'day_phase_enc', 'day_of_week_enc', 'month_enc', 'popularity', 'followers', 'following', 'tweet_count', 'verified_enc', 'seniority']
 tweet_vars = ['like_count', 'retweet_count', 'quote_count', 'reply_count', 'reach', 'sentiment_enc', 'day_phase_enc', 'day_of_week_enc', 'month_enc', 'topics_ids']
 users_vars = ['followers', 'following', 'tweet_count', 'verified_enc', 'seniority']
@@ -32,7 +32,7 @@ def predict():
     test_df = prepare_model_data(test_df)
 
     X_train, y_train, X_test, y_test = split_data(train_df, test_df)
-    train_time_series_with_folds(X_train, X_test, y_train, y_test)
+    train_time_series_with_folds(X_train, y_train, X_test, y_test)
 
 
 def get_test_train_data():
@@ -40,22 +40,31 @@ def get_test_train_data():
     print(filenames)
 
     if len(filenames) == 2:
-        train_df = pd.read_csv(filepath_or_buffer=filenames[0], sep=",")
-        test_df = pd.read_csv(filepath_or_buffer=filenames[1], sep=",")
+        train_df = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[0], sep=",")
+        test_df = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[1], sep=",")
     elif len(filenames) > 2:
-        train_df = pd.read_csv(filepath_or_buffer=filenames[0], sep=",")
-        test_df = pd.read_csv(filepath_or_buffer=filenames[len(filenames) - 1], sep=",")
-        for i in range(1, len(filenames) - 1):
-            temp_df = pd.read_csv(filepath_or_buffer=filenames[i], sep=",")
-            train_df = train_df.append(temp_df, ignore_index=True)
+        test_df = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[len(filenames) - 1], sep=",")
+        test_df = convert_and_sort_time(test_df)
+
+        train_df = pd.DataFrame()
+        for i in range(len(filenames) - 1):
+            df_temp = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[i], sep=",")
+            df_temp = convert_and_sort_time(df_temp)
+            train_df = pd.concat([train_df, pd.DataFrame.from_records(df_temp)])
 
     return train_df, test_df
 
 
+def convert_and_sort_time(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['timestamp'] = [i.replace(tzinfo=datetime.timezone.utc) for i in df['timestamp']]
+    return df.sort_values(by='timestamp', ascending=True)
+
+
 def prepare_model_data(df):
-    df = df[variables_to_predict]
-    df = df[(~df['topics'].isnull()) & (df['topics'] != '')]
-    return df[variables_to_keep].resample('D', on='timestamp').mean()
+    df = df[(df['topics_ids'] != -1) & (df['topics'] == 'Person')]
+    df = df[variables_to_predict].resample('D', on='timestamp').mean()
+    return df.dropna(how='any')
 
 
 def split_data(train_df, test_df):
@@ -69,18 +78,20 @@ def split_data(train_df, test_df):
     print(y_test.shape)
     return X_train, y_train, X_test, y_test
 
-
 def train_time_series_with_folds(X_train, y_train, X_test, y_test):
-    #create, train and do inference of the model
     model = GradientBoostingRegressor(random_state=42)
     model.fit(X_train, y_train)
-
     predictions = model.predict(X_test)
+    joblib.dump(model, '../../data/models/topic_performance.joblib')
 
-    #calculate MAE
     mae = np.round(mean_absolute_error(y_test, predictions), 3)
+    mse = np.round(mean_squared_error(y_test, predictions), 3)
+    rmse = np.round(math.sqrt(mse), 3)
+    print(mae)
+    print(mse)
+    print(rmse)
 
-    draw_results_charts(model, X_test.index, y_test, predictions, mae)
+    draw_results_charts(model, X_test.reset_index()['timestamp'], y_test, predictions, mae)
 
 
 def draw_results_charts(model, timestamps, test_targets, predictions, mae):
@@ -89,11 +100,11 @@ def draw_results_charts(model, timestamps, test_targets, predictions, mae):
         d = dict()
         d['timestamp'] = timestamps[i]
         d['type'] = 'real'
-        d['value'] = test_targets
+        d['value'] = test_targets[i]
         res.append(d)
 
         d = dict()
-        d['timestamp'] = timestamps
+        d['timestamp'] = timestamps[i]
         d['type'] = 'prediction'
         d['value'] = predictions[i]
         res.append(d)
@@ -119,3 +130,7 @@ def draw_results_charts(model, timestamps, test_targets, predictions, mae):
     fig = px.bar(df_importances, x="feature", y="importance", title=("Variable Importances"),
                  color_discrete_sequence=px.colors.qualitative.Safe, width=900, height=500)
     fig.show()
+
+
+if __name__ == '__main__':
+    predict()

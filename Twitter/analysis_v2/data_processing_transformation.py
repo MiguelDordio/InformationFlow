@@ -222,7 +222,7 @@ def time_phases_transformation(df):
 
 def time_phases_encoding(df):
     print("         Doing variables encoding")
-    cols_to_transform = ['day_phase', 'day_of_week', 'month', 'year', 'sentiment', 'verified']
+    cols_to_transform = ['day_phase', 'day_of_week', 'month', 'year', 'sentiment', 'verified', 'hashtags']
     for col in cols_to_transform:
         enc = LabelEncoder()
         enc.fit(df[col])
