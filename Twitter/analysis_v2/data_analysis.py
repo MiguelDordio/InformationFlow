@@ -20,8 +20,8 @@ hashtags = [True, False]
 offline_graphs = True
 
 
-def analysis():
-    df = essemble_dataset(DATASETS_PATH)
+def analysis(filenames: list):
+    df = ensemble_dataset(filenames)
 
     topics_categories = df['topics_cleaned'].unique()[1:]
     tweet_analysis = df[['text', 'year', 'day_phase', 'day_of_week', 'month', 'retweet_count', 'quote_count',
@@ -98,11 +98,10 @@ def analysis():
                             "Topics", "% with retweets", offline_graphs)
 
 
-def essemble_dataset(folder_path):
+def ensemble_dataset(filenames):
     df = pd.DataFrame()
-    filenames = next(walk(folder_path), (None, None, []))[2]
     for filename in filenames:
-        df_temp = pd.read_csv(filepath_or_buffer=folder_path + '/' + filename, sep=",", engine=None)
+        df_temp = pd.read_csv(filepath_or_buffer=filename, sep=",", engine=None)
         df_temp = df_temp.sort_values(by='timestamp', ascending=True)
         df_temp = df_temp.drop(['index', 'Unnamed: 0'], axis=1)
         df = pd.concat([df, pd.DataFrame.from_records(df_temp)])

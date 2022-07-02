@@ -7,20 +7,15 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
 
-FILE_USERS = "../../data/tweets/raw_users_2019.csv"
-FILE_USERS_TWEETS = "../../data/tweets/raw_tweets_2019.csv"
-
-FILE_RETWEETERS = "../../data/retweets/retweets_2019.csv"
-FILE_RETWEETERS_USERS = "../../data/retweets/retweets_users_2019.csv"
 
 FINAL_DATASET = "../../data/processed_tweets/tweets_"
 FINAL_DATASET_RETWEETS_INFO = "../../data/processed_retweets/retweets_info_"
 
 
-def load_datasets():
+def load_datasets(tweets_path, user_path):
     print("(1/10) - Loading datasets")
-    df_tweets = pd.read_csv(filepath_or_buffer=FILE_USERS_TWEETS, sep=",")
-    df_users = pd.read_csv(filepath_or_buffer=FILE_USERS, sep=",")
+    df_tweets = pd.read_csv(filepath_or_buffer=tweets_path, sep=",")
+    df_users = pd.read_csv(filepath_or_buffer=user_path, sep=",")
 
     df_tweets = df_tweets.sort_values(by='timestamp', ascending=True).reset_index()
     df_users = df_users.drop_duplicates(subset=['user_id'], keep="first")
@@ -28,10 +23,10 @@ def load_datasets():
     return df_tweets, df_users
 
 
-def get_tweet_reach(df_tweets, df_users):
+def get_tweet_reach(df_tweets, df_users, retweets_path, retweeters_path):
     print("(2/10) - Preparing to calculate tweet reach")
-    df_retweeters = pd.read_csv(filepath_or_buffer=FILE_RETWEETERS_USERS, sep=",")
-    df_retweets = pd.read_csv(filepath_or_buffer=FILE_RETWEETERS, sep=",")
+    df_retweeters = pd.read_csv(filepath_or_buffer=retweeters_path, sep=",")
+    df_retweets = pd.read_csv(filepath_or_buffer=retweets_path, sep=",")
 
     # remove duplicated retweeters
     df_retweeters = df_retweeters.drop_duplicates(subset=['user_id'], keep="first")
@@ -196,7 +191,7 @@ def merge_tweets_and_users(df_tweets, df_users):
     df = pd.merge(df_tweets[
                       ['tweet_id', 'text', 'timestamp', 'user_id', 'like_count', 'retweet_count',
                        'quote_count', 'reply_count', 'reach', 'topics_ids', 'topics', 'topics_cleaned',
-                       'sentiment', 'popularity']],
+                       'sentiment', 'hashtags', 'popularity']],
                   df_users[['user_id', 'followers', 'following', 'tweet_count', 'verified', 'created_at']],
                   on="user_id").reset_index()
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -277,10 +272,10 @@ def save_to_csv(df, df_retweets_info, dataset_file, retweets_info_file):
     df_retweets_info.to_csv(location_retweets, sep=',', date_format='%Y-%m-%d %H:%M:%S')
 
 
-def process_and_transform():
-    df_tweets, df_users = load_datasets()
+def process_and_transform(tweets_path, user_path, retweets_path, retweeters_path):
+    df_tweets, df_users = load_datasets(tweets_path, user_path)
 
-    df_retweets_info = get_tweet_reach(df_tweets, df_users)
+    df_retweets_info = get_tweet_reach(df_tweets, df_users, retweets_path, retweeters_path)
 
     process_topics(df_tweets)
 
@@ -297,7 +292,3 @@ def process_and_transform():
     df = outliers(df)
 
     save_to_csv(df, df_retweets_info, FINAL_DATASET, FINAL_DATASET_RETWEETS_INFO)
-
-
-if __name__ == '__main__':
-    process_and_transform()

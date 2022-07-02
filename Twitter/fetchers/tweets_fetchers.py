@@ -8,7 +8,7 @@ import tweepy
 from helpers.Api import connect_tweepy, process_tweets_and_users, save_state
 
 FILE_TWEETS = "../../data/tweets/raw_tweets"
-FILE_USERS = "../../data/tweets/raw_users"
+FILE_USERS = "../../data/users/raw_users"
 QUERY_MAX_RESULTS = 100
 
 
@@ -123,10 +123,13 @@ def get_timeline_tweets(query, start, end, total_tweets):
                                            users_file)
 
 
-if __name__ == '__main__':
-    q = "lang:en -is:retweet -is:reply -the the"
+def get_tweets_and_users(from_date, to_date):
     q2 = "lang:en place_country:US -url -is:retweet -is:reply -the the"
     max_tweets = 100
-    d1 = datetime.datetime(2019, 12, 31)
-    d2 = datetime.datetime(2020, 1, 1)
-    get_timeline_tweets(q2, d1, d2, max_tweets)
+    get_timeline_tweets(q2, from_date, to_date, max_tweets)
+
+
+if __name__ == '__main__':
+    from_date = datetime.datetime(2019, 12, 31)
+    to_date = datetime.datetime(2020, 1, 1)
+    get_tweets_and_users(from_date, to_date)

@@ -9,16 +9,15 @@ import math
 
 from helpers.Api import connect_tweepy, process_tweets_and_users, save_state
 
-USERS_TWEETS = "../../data/tweets/raw_tweets_2019.csv"
 RETWEETS = "../../data/retweets/retweets"
-RETWEETS_USERS = "../../data/retweets/retweets_users"
+RETWEETS_USERS = "../../data/retweeters/retweeters"
 QUERY_MAX_RESULTS = 500
 MAX_QUERY_SIZE = 1024
 
 
-def fetch_retweeters():
+def fetch_retweeters(tweets_path):
     tweepy_api = connect_tweepy()
-    df_tweets = pd.read_csv(filepath_or_buffer=USERS_TWEETS, sep=",")
+    df_tweets = pd.read_csv(filepath_or_buffer=tweets_path, sep=",")
 
     # df_tweets = df_tweets[:20]
     df_tweets = df_tweets[df_tweets['topics'] != '[]']
