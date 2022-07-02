@@ -7,7 +7,6 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
 
-
 FILE_USERS = "../../data/tweets/raw_users_2019.csv"
 FILE_USERS_TWEETS = "../../data/tweets/raw_tweets_2019.csv"
 
@@ -28,6 +27,7 @@ def load_datasets():
 
     return df_tweets, df_users
 
+
 def get_tweet_reach(df_tweets, df_users):
     print("(2/10) - Preparing to calculate tweet reach")
     df_retweeters = pd.read_csv(filepath_or_buffer=FILE_RETWEETERS_USERS, sep=",")
@@ -41,9 +41,9 @@ def get_tweet_reach(df_tweets, df_users):
 
     # merge retweeters datasets
     df_retweets_info = pd.merge(df_retweets[['tweet_id', 'text', 'timestamp', 'user_id', 'like_count', 'retweet_count',
-                                           'quote_count', 'reply_count', 'referenced_tweets']],
-                                df_retweeters[['user_id', 'followers', 'following', 'tweet_count', 'verified', 'created_at']]
-                                , on="user_id").reset_index()
+                                             'quote_count', 'reply_count', 'referenced_tweets']],
+                                df_retweeters[['user_id', 'followers', 'following', 'tweet_count', 'verified',
+                                               'created_at']], on="user_id").reset_index()
 
     # remove NANs
     df_retweets_info = df_retweets_info[df_retweets_info['referenced_tweets'].notna()]
@@ -67,7 +67,8 @@ def get_ref_tweet_id(ref_tweets):
     g = str(ref_tweets)
     if isinstance(g, str) and g != 'nan' and not pd.isna(g):
         return int(g.split()[1].replace(',', ''))
-    else: return None
+    else:
+        return None
 
 
 def calculate_tweet_reach(tweet_id, user_id, topics, retweets_count, ref_tweed_id, df_users, df_retweets_info):
@@ -75,7 +76,8 @@ def calculate_tweet_reach(tweet_id, user_id, topics, retweets_count, ref_tweed_i
     total_reach += df_users[df_users['user_id'] == user_id]['followers'].sum()
     if topics != '[]' and retweets_count > 0:
         if ref_tweed_id is not None and ref_tweed_id != 0:
-            total_reach += df_retweets_info[(df_retweets_info['ref_tweed_id'] == tweet_id) | (df_retweets_info['ref_tweed_id'] == ref_tweed_id)]['followers'].sum()
+            total_reach += df_retweets_info[(df_retweets_info['ref_tweed_id'] == tweet_id) |
+                                            (df_retweets_info['ref_tweed_id'] == ref_tweed_id)]['followers'].sum()
         else:
             total_reach += df_retweets_info[df_retweets_info['ref_tweed_id'] == tweet_id]['followers'].sum()
     return total_reach
@@ -116,9 +118,10 @@ def group_topics(topic):
         return 'Brand'
     elif 'Person' in topic:
         return 'Person'
-    elif 'Sport' in topic or 'Athlete' in topic or 'Coach' in topic or 'Hockey' in topic or 'Football' in topic or 'NFL' in topic:
+    elif 'Sport' in topic or 'Athlete' in topic or 'Coach' in topic or 'Hockey' in topic or 'Football' in topic or \
+            'NFL' in topic:
         return 'Sport'
-    elif 'TV' in topic or 'Movie' in topic or 'Award' in topic or 'Actor' in topic or 'Fictional Character' in topic\
+    elif 'TV' in topic or 'Movie' in topic or 'Award' in topic or 'Actor' in topic or 'Fictional Character' in topic \
             or 'Entertainment' in topic:
         return 'TV and Movies'
     elif 'Music' in topic or 'Musician' in topic or 'Concert' in topic or 'Song' in topic or 'Radio' in topic:
@@ -148,18 +151,22 @@ def sentiment_classification(df_tweets):
 
 
 def sentiment_scores(sentence, prints, sid_obj):
-    if prints: print("\nSentence:", sentence)
+    if prints:
+        print("\nSentence:", sentence)
 
     sentiment_dict = sid_obj.polarity_scores(sentence)
 
     if sentiment_dict['compound'] >= 0.05:
-        if prints: print("Positive")
+        if prints:
+            print("Positive")
         return "Positive"
     elif sentiment_dict['compound'] <= - 0.05:
-        if prints: print("Positive")
+        if prints:
+            print("Positive")
         return "Negative"
     else:
-        if prints: print("Neutral")
+        if prints:
+            print("Neutral")
         return "Neutral"
 
 
@@ -187,11 +194,11 @@ def tweet_popularity_label(retweet_count, quote_count):
 def merge_tweets_and_users(df_tweets, df_users):
     print("(7/10) - Merging tweets and corresponding users\n")
     df = pd.merge(df_tweets[
-                               ['tweet_id', 'text', 'timestamp', 'user_id', 'like_count', 'retweet_count',
-                                'quote_count',
-                                'reply_count', 'reach', 'topics_ids', 'topics', 'sentiment', 'popularity']],
-                           df_users[['user_id', 'followers', 'following', 'tweet_count', 'verified', 'created_at']],
-                           on="user_id").reset_index()
+                      ['tweet_id', 'text', 'timestamp', 'user_id', 'like_count', 'retweet_count',
+                       'quote_count', 'reply_count', 'reach', 'topics_ids', 'topics', 'topics_cleaned',
+                       'sentiment', 'popularity']],
+                  df_users[['user_id', 'followers', 'following', 'tweet_count', 'verified', 'created_at']],
+                  on="user_id").reset_index()
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df
 
@@ -247,7 +254,8 @@ def outliers(df):
 
 def outliers_removal(df, outliers_filter):
     df_no_outliers = df[outliers_filter].copy()
-    print('         Percentage of data kept after removing outliers:', np.round(df_no_outliers.shape[0] / df.shape[0], 4) * 100,'%')
+    print('         Percentage of data kept after removing outliers:',
+          np.round(df_no_outliers.shape[0] / df.shape[0], 4) * 100, '%')
     print('         Percentage of data removed:', np.round((1 - (df_no_outliers.shape[0] / df.shape[0])) * 100, 4), '%')
     print("         Size after outlier removal:", df_no_outliers.shape[0])
     df_rets = df[df['retweet_count'] > 0]
@@ -282,7 +290,6 @@ def process_and_transform():
 
     popularity(df_tweets)
 
-    # merging tweets data with respective users info
     df = merge_tweets_and_users(df_tweets, df_users)
 
     time_phases_transformation(df)
