@@ -105,7 +105,7 @@ def ensemble_dataset(filenames):
         df_temp = df_temp.sort_values(by='timestamp', ascending=True)
         df_temp = df_temp.drop(['index', 'Unnamed: 0'], axis=1)
         df = pd.concat([df, pd.DataFrame.from_records(df_temp)])
-    return df
+    return df.reset_index()
 
 
 def retweets_likes_info_by_year(source_df, cols, cats_sort):
