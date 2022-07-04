@@ -5,8 +5,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 import seaborn as sns
+
 sns.set()
 
+CHARTS_PATH = '../data/charts/tweets_analysis'
 
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November',
           'December']
@@ -90,8 +92,8 @@ def analysis(filenames: list):
     # Tweet sentiment per topic
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment', 'topics_cleaned'], sentiments)
     multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "sentiment", "% with retweets", "sentiment",
-                         "% with retweets", "Tweet sentiment by topic and corresponding % retweet count",
-                         offline_graphs)
+                      "% with retweets", "Tweet sentiment by topic and corresponding % retweet count",
+                      offline_graphs)
 
 
 def ensemble_dataset(filenames):
@@ -122,7 +124,7 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
             df_all = df_all.reindex(cats_sort).reset_index()
             df_rets = df_rets.reindex(cats_sort).reset_index()
             df_likes = df_likes.reindex(cats_sort).reset_index()
-            df_all['year'] = [y for i in range(len(cats_sort))]
+            df_all['year'] = [y for _ in range(len(cats_sort))]
             df_all['% with retweets'] = np.round((df_rets["count " + cols[0]] / df_all["count " + cols[0]]) * 100, 2)
             df_all['% with likes'] = np.round((df_likes["count " + cols[0]] / df_all["count " + cols[0]]) * 100, 2)
         else:
@@ -133,7 +135,7 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
             year_items = []
             for cat in cats_sort:
                 count = len(df_all[df_all[cols[0]] == cat][cols[1]].unique())
-                year_items += [y for i in range(count)]
+                year_items += [y for _ in range(count)]
 
             df_all['year'] = year_items
 
@@ -145,7 +147,7 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
             df_all['% with likes'] = np.round(
                 (filter_likes["count " + cols[0] + "_y"] / filter_likes["count " + cols[0] + "_x"]) * 100, 2)
 
-        df_all['sum'] = [df_all["count " + cols[0]].sum() for i in range(df_all.shape[0])]
+        df_all['sum'] = [df_all["count " + cols[0]].sum() for _ in range(df_all.shape[0])]
         df_all['% ' + cols[0]] = (df_all["count " + cols[0]] / df_all['sum']) * 100
 
         df = pd.concat([df, pd.DataFrame.from_records(df_all)])
@@ -175,11 +177,11 @@ def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, ti
 
     fig.update_yaxes(title_text=y_line_name, secondary_y=True)
     fig.update_yaxes(title_text=y_bar_name, secondary_y=False)
-    fig.update_layout(title_text=title, width=900, height=500)
+    fig.update_layout(title_text=title, width=1100, height=500)
     fig.update_xaxes(title_text=x_name)
     fig.show()
     if offline:
-        plotly.offline.plot(fig, filename='../data/charts/' + title + '.html')
+        plotly.offline.plot(fig, filename=CHARTS_PATH + title + '.html')
 
 
 def multi_label_chart(df, category_label, categories, x_col, y_col, x_name, y_name, title, offline):
@@ -189,8 +191,8 @@ def multi_label_chart(df, category_label, categories, x_col, y_col, x_name, y_na
 
     fig.update_xaxes(title_text=x_name)
     fig.update_yaxes(title_text=y_name)
-    fig.update_layout(title_text=title, width=900, height=500)
+    fig.update_layout(title_text=title, width=1100, height=500)
 
     fig.show()
     if offline:
-        plotly.offline.plot(fig, filename='../data/charts/' + title + '.html')
+        plotly.offline.plot(fig, filename=CHARTS_PATH + title + '.html')

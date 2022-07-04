@@ -11,12 +11,12 @@ import seaborn as sns
 
 sns.set()
 
-DATASETS_PATH = "../../data/processed_tweets/"
-DATASETS_RETWEETS_PATH = "../../data/processed_retweets/"
+CHARTS_PATH = '../data/charts/retweets_analysis'
 
 topics_categories = ['Brand', 'Holiday', 'Person', 'Interest and Hobbies', 'Sport', 'TV and Movies', 'Other',
                      'Video Game', 'Entities', 'Political', 'Music', 'Book', 'News']
-palette = ['#006D77', '#FBD1A2', '#7DCFB6', '#E29578', '#254E70', '#C33C54', '#FFDDD2', '#004346', '#faf3dd', '#00B2CA', '#37718E', '#aed9e0', '#09BC8A']
+palette = ['#006D77', '#FBD1A2', '#7DCFB6', '#E29578', '#254E70', '#C33C54', '#FFDDD2', '#004346', '#faf3dd', '#00B2CA',
+           '#37718E', '#aed9e0', '#09BC8A']
 offline_charts = True
 
 
@@ -51,8 +51,8 @@ def retweets_analysis(filenames: list, retweets_filenames: list):
     print("Popular retweets (>10) account for only:", (df[df['retweet_count'] > 10].shape[0] /
                                                        df[df['retweet_count'] > 0].shape[0]) * 100, "% of the dataset")
 
-    analysis_chart(df_popular_retweeters_chars, "Topic", 'Average Retweeters Half Time', 'Average Retweeters Total Time',
-                   "Topics", 'Average nº of hours to get 50% retweets', 'Average nº of hours to get all retweets',
+    analysis_chart(df_popular_retweeters_chars, "Topic", 'Average Retweeters Half Time', 'Average Retweeters Total Time'
+                   , "Topics", 'Average nº of hours to get 50% retweets', 'Average nº of hours to get all retweets',
                    "Average number of hours to get the retweets split by median", offline_charts)
 
     analysis_chart(df_popular_retweeters_chars, "Topic", 'Average Retweeters Followers First Half',
@@ -248,8 +248,10 @@ def shared_tweets(source_df, cols, cats_sort):
         dfy = source_df[source_df['year'] == y]
 
         df_all = dfy.groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
-        df_shared = dfy[dfy['retweet_count'] > 0].groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
-        df_not_shared = dfy[dfy['retweet_count'] == 0].groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
+        df_shared = dfy[dfy['retweet_count'] > 0].groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers",
+                                                                                                aggfunc="mean")})
+        df_not_shared = dfy[dfy['retweet_count'] == 0].groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers",
+                                                                                                     aggfunc="mean")})
 
         df_all = df_all.reindex(cats_sort).reset_index()
         df_rets = df_shared.reindex(cats_sort).reset_index()
@@ -269,10 +271,10 @@ def retweeters_info_chart(df, x_col_categories, x_col, y_col, title, offline):
     fig = px.bar(df, x=x_col, y=y_col, color="Year", color_discrete_sequence=palette, barmode="group",
                  category_orders={x_col: x_col_categories,
                                   'year': df['Year'].unique()})
-    fig.update_layout(title=title)
+    fig.update_layout(title=title, width=1100, height=500)
     fig.show()
     if offline:
-        plotly.offline.plot(fig, filename='../../data/charts/' + title + '.html')
+        plotly.offline.plot(fig, filename=CHARTS_PATH + title + '.html')
 
 
 def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, title, offline):
@@ -295,13 +297,4 @@ def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, ti
     fig.update_xaxes(title_text=x_name)
     fig.show()
     if offline:
-        plotly.offline.plot(fig, filename='../../data/charts/' + title + '.html')
-
-
-def time_analysis_charts(df, title):
-    fig = px.bar(df, x="Topic", y='% Time to get 50% retweets', color="Year", barmode="group",
-                 color_discrete_sequence=palette,
-                 category_orders={"Topic": topics_categories,
-                                  'year': df['year'].unique()})
-    fig.update_layout(title_text=title, width=950, height=500)
-    fig.show()
+        plotly.offline.plot(fig, filename=CHARTS_PATH + title + '.html')

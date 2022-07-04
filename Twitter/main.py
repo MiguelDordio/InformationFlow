@@ -92,7 +92,7 @@ def analyze():
     retweets_filenames = [PATH_PROCESSED_RETWEETS_FILES + "/" + filename for filename in processed_retweets_filenames]
 
     analysis(filenames)
-    #retweets_analysis(filenames, retweets_filenames)
+    retweets_analysis(filenames, retweets_filenames)
 
 
 
