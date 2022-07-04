@@ -4,23 +4,22 @@ import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
-from os import walk
 import seaborn as sns
-sns.set()
 
+sns.set()
 
 DATASETS_PATH = "../../data/processed_tweets/"
 
-months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November',
+          'December']
 week_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 day_phases = ['Morning', 'Afternoon', 'Dusk', 'Night', 'Middle of the night']
 day_phases_old = ['Dawn', 'Morning', 'Afternoon', 'Evening', 'Night']
 sentiments = ['Negative', 'Neutral', 'Positive']
 hashtags = [True, False]
 offline_graphs = True
-palette = ['rgb(136, 204, 238)', 'rgb(204, 102, 119)', 'rgb(221, 204, 119)', 'rgb(51, 34, 136)', '#D62728',
-               '#FF9900', 'rgb(170, 68, 153)', 'rgb(68, 170, 153)', 'rgb(153, 153, 51)', 'rgb(136, 34, 85)',
-               'rgb(102, 17, 0)', 'rgb(136, 136, 136)']
+palette = ['#006D77', '#FBD1A2', '#7DCFB6', '#E29578', '#254E70', '#C33C54', '#FFDDD2', '#004346', '#faf3dd', '#00B2CA',
+           '#37718E', '#aed9e0', '#09BC8A']
 
 
 def analysis(filenames: list):
@@ -34,30 +33,30 @@ def analysis(filenames: list):
     # Average retweet and like count per phase of the day
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase'], day_phases_old)
     analysis_chart(df_analysis, 'day_phase', '% with retweets', '% with likes', 'Day phase', '% with retweets',
-                   '% with likes', 'Percentage of retweets and likes during the day')
+                   '% with likes', 'Percentage of retweets and likes during the day', offline_graphs)
     analysis_chart(df_analysis, 'day_phase', 'retweets mean', 'likes mean', 'Day phase', 'Retweets mean', 'Likes mean',
-                   'Average retweets and likes during the day')
+                   'Average retweets and likes during the day', offline_graphs)
 
     # Average retweet and like count during the week
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_of_week'], week_days)
     analysis_chart(df_analysis, 'day_of_week', '% with retweets', '% with likes', 'Weekday', '% with retweets',
-                   '% with likes', 'Percentage of retweets and likes during the week')
+                   '% with likes', 'Percentage of retweets and likes during the week', offline_graphs)
     analysis_chart(df_analysis, 'day_of_week', 'retweets mean', 'likes mean', 'Weekday', 'Retweets mean', 'Likes mean',
-                   'Average retweets and likes during the week')
+                   'Average retweets and likes during the week', offline_graphs)
 
     # Average retweet count per month
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['month'], months)
     analysis_chart(df_analysis, 'month', '% with retweets', '% with likes', 'Month', '% with retweets',
-                   '% with likes', 'Percentage of retweets and likes during the year')
+                   '% with likes', 'Percentage of retweets and likes during the year', offline_graphs)
     analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean', 'Month', 'Retweets mean', 'Likes mean',
-                   'Average retweets and likes during the year')
+                   'Average retweets and likes during the year', offline_graphs)
 
     # Tweets performance by sentiment
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment'], sentiments)
     analysis_chart(df_analysis, 'sentiment', '% with retweets', '% with likes', 'Sentiment', 'Retweet count',
-                   'Likes count', 'Percentage of retweets and likes by sentiment')
+                   'Likes count', 'Percentage of retweets and likes by sentiment', offline_graphs)
     analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean', 'Sentiment', 'Retweets mean', 'Likes mean',
-                   'Average retweets and likes number by sentiment')
+                   'Average retweets and likes number by sentiment', offline_graphs)
 
     # Tweets performance by topics
     topic_analysis = tweet_analysis[tweet_analysis['topics_cleaned'].notnull()].copy()
@@ -66,40 +65,40 @@ def analysis(filenames: list):
     # Performance of each topic in retweets and likes
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['topics_cleaned'], topics_categories)
     analysis_chart(df_analysis, 'topics_cleaned', '% with retweets', '% with likes', 'Topics', 'Retweet count',
-                   'Likes count', 'Percentage of retweets and likes by topic')
+                   'Likes count', 'Percentage of retweets and likes by topic', offline_graphs)
     analysis_chart(df_analysis, 'topics_cleaned', 'retweets mean', 'likes mean', 'Topics', 'Retweets mean',
                    'Likes mean',
-                   'Average tweets performance by topic')
+                   'Average tweets performance by topic', offline_graphs)
 
     # Average retweet count per topic during the day
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase', 'topics_cleaned'], day_phases)
-    multiple_analysis_chart(df_analysis, "day_phase", "% with retweets", "year", "topics_cleaned",
-                            "Percentage of retweets by topic during the day",
-                            "Day phase", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "day_phase", "% with retweets", "year", "topics_cleaned",
+                      "Percentage of retweets by topic during the day",
+                      "Day phase", "% with retweets", offline_graphs)
 
     # Average retweet count per topic during the week
     df_analysis = retweets_likes_info_by_year(topic_analysis, ['day_of_week', 'topics_cleaned'], week_days)
-    multiple_analysis_chart(df_analysis, "day_of_week", "% with retweets", "year", "topics_cleaned",
-                            "Percentage of retweets by topic during the week",
-                            "Weekday", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "day_of_week", "% with retweets", "year", "topics_cleaned",
+                      "Percentage of retweets by topic during the week",
+                      "Weekday", "% with retweets", offline_graphs)
 
     # Average retweet count per topic during the year
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['month', 'topics_cleaned'], months)
-    multiple_analysis_chart(df_analysis, "month", "% with retweets", "year", "topics_cleaned",
-                            "Percentage of retweets by topic during the year",
-                            "Month", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "month", "% with retweets", "year", "topics_cleaned",
+                      "Percentage of retweets by topic during the year",
+                      "Month", "% with retweets", offline_graphs)
 
     # Impact of hashtags in topic popularity
     df_analysis = retweets_likes_info_by_year(topic_analysis, ['hashtags', 'topics_cleaned'], hashtags)
-    multiple_analysis_chart(df_analysis, "topics_cleaned", "% with retweets", "year", "hashtags",
-                            "Hashtags presence by topic and corresponding % retweet count",
-                            "Topics", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", "% with retweets", "year", "hashtags",
+                      "Hashtags presence by topic and corresponding % retweet count",
+                      "Topics", "% with retweets", offline_graphs)
 
     # Tweet sentiment per topic
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment', 'topics_cleaned'], sentiments)
-    multiple_analysis_chart(df_analysis, "topics_cleaned", "% with retweets", "year", "sentiment",
-                            "Tweet sentiment by topic and corresponding % retweet count",
-                            "Topics", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", "% with retweets", "year", "sentiment",
+                      "Tweet sentiment by topic and corresponding % retweet count",
+                      "Topics", "% with retweets", offline_graphs)
 
 
 def ensemble_dataset(filenames):
@@ -117,12 +116,14 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
     for y in np.sort(source_df['year'].unique()):
         dfy = source_df[source_df['year'] == y]
         df_all = dfy.groupby(cols).agg(
-                                        **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")},
-                                        **{"retweets mean": pd.NamedAgg(column="retweet_count", aggfunc="mean")},
-                                        **{"likes mean": pd.NamedAgg(column="like_count", aggfunc="mean")}).round(2)
+            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")},
+            **{"retweets mean": pd.NamedAgg(column="retweet_count", aggfunc="mean")},
+            **{"likes mean": pd.NamedAgg(column="like_count", aggfunc="mean")}).round(2)
 
-        df_rets = dfy[dfy['retweet_count'] > 0].groupby(cols).agg(**{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")})
-        df_likes = dfy[dfy['like_count'] > 0].groupby(cols).agg(**{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")})
+        df_rets = dfy[dfy['retweet_count'] > 0].groupby(cols).agg(
+            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")})
+        df_likes = dfy[dfy['like_count'] > 0].groupby(cols).agg(
+            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")})
 
         if len(cols) == 1:
             df_all = df_all.reindex(cats_sort).reset_index()
@@ -143,11 +144,13 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
 
             df_all['year'] = year_items
 
-            filter_rets = df_all.merge(df_rets,on=[cols[0], cols[1]])
-            df_all['% with retweets'] = np.round((filter_rets["count " + cols[0] + "_y"] / filter_rets["count " + cols[0] + "_x"]) * 100, 2)
+            filter_rets = df_all.merge(df_rets, on=[cols[0], cols[1]])
+            df_all['% with retweets'] = np.round(
+                (filter_rets["count " + cols[0] + "_y"] / filter_rets["count " + cols[0] + "_x"]) * 100, 2)
 
-            filter_likes = df_all.merge(df_likes,on=[cols[0], cols[1]])
-            df_all['% with likes'] = np.round((filter_likes["count " + cols[0] + "_y"] / filter_likes["count " + cols[0] + "_x"]) * 100, 2)
+            filter_likes = df_all.merge(df_likes, on=[cols[0], cols[1]])
+            df_all['% with likes'] = np.round(
+                (filter_likes["count " + cols[0] + "_y"] / filter_likes["count " + cols[0] + "_x"]) * 100, 2)
 
         df_all['sum'] = [df_all["count " + cols[0]].sum() for i in range(df_all.shape[0])]
         df_all['% ' + cols[0]] = (df_all["count " + cols[0]] / df_all['sum']) * 100
@@ -155,12 +158,15 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
         df = pd.concat([df, pd.DataFrame.from_records(df_all)])
 
     if len(cols) == 1:
-        return df[['year', cols[0], "count " + cols[0], '% ' + cols[0], '% with retweets', '% with likes', 'retweets mean', 'likes mean']]
+        return df[
+            ['year', cols[0], "count " + cols[0], '% ' + cols[0], '% with retweets', '% with likes', 'retweets mean',
+             'likes mean']]
     else:
-        return df[['year', cols[0], cols[1], "count " + cols[0], '% ' + cols[0], '% with retweets', '% with likes', 'retweets mean', 'likes mean']]
+        return df[['year', cols[0], cols[1], "count " + cols[0], '% ' + cols[0], '% with retweets', '% with likes',
+                   'retweets mean', 'likes mean']]
 
 
-def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, plot_title):
+def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, title, offline):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     years = np.sort(df['year'].unique())
     years_count = len(df['year'].unique())
@@ -168,21 +174,30 @@ def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, pl
     for i in range(years_count):
         year = years[i]
         dfy = df[df['year'] == year]
-        fig.add_trace(go.Bar(x=dfy[x_col], y=dfy[y_bar], text=list(map(str, dfy[y_bar].tolist())), name=y_bar_name + ' ' + str(year), marker_color=palette[i], width=0.28, textposition='inside'), secondary_y=False)
-        fig.add_trace(go.Scatter(x=dfy[x_col], y=dfy[y_line], name=y_line_name + ' ' + str(year), marker_color=palette[i+years_count]), secondary_y=True)
+        fig.add_trace(go.Bar(x=dfy[x_col], y=dfy[y_bar], text=list(map(str, dfy[y_bar].tolist())),
+                             name=y_bar_name + ' ' + str(year), marker_color=palette[i], width=0.28,
+                             textposition='inside'), secondary_y=False)
+        fig.add_trace(go.Scatter(x=dfy[x_col], y=dfy[y_line], name=y_line_name + ' ' + str(year),
+                                 marker_color=palette[i + years_count]), secondary_y=True)
 
     fig.update_yaxes(title_text=y_line_name, secondary_y=True)
     fig.update_yaxes(title_text=y_bar_name, secondary_y=False)
-    fig.update_layout(title_text=plot_title, width=900, height=500)
+    fig.update_layout(title_text=title, width=900, height=500)
     fig.update_xaxes(title_text=x_name)
     fig.show()
+    if offline:
+        plotly.offline.plot(fig, filename='../../data/charts/' + title + '.html')
 
 
-def multiple_analysis_chart(df, x, y, color, text, title, x_title, y_title, offline):
-    df.year = df.year.astype(str)
-    fig = px.bar(df, x=x, y=y, color=color, text=text, title=title, width=900, height=500, barmode="group", color_discrete_sequence=px.colors.qualitative.Safe)
-    fig.update_xaxes(title_text=x_title)
-    fig.update_yaxes(title_text=y_title)
+def multi_label_chart(df, category_label, categories, x_col, y_col, x_name, y_name, title, offline):
+    df['year'] = df['year'].astype(str)
+    fig = px.bar(df, x=x_col, y=y_col, color=category_label, barmode="stack", text=y_col, facet_col="year",
+                 color_discrete_sequence=palette, category_orders={x_col: categories, 'year': df['year'].unique()})
+
+    fig.update_xaxes(title_text=x_name)
+    fig.update_yaxes(title_text=y_name)
+    fig.update_layout(title_text=title, width=900, height=500)
+
     fig.show()
     if offline:
         plotly.offline.plot(fig, filename='../../data/charts/' + title + '.html')

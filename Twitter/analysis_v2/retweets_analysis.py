@@ -4,7 +4,6 @@ import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
-from os import walk
 import datetime
 from statistics import mean
 from dateutil.relativedelta import relativedelta
@@ -15,18 +14,16 @@ sns.set()
 DATASETS_PATH = "../../data/processed_tweets/"
 DATASETS_RETWEETS_PATH = "../../data/processed_retweets/"
 
-topics_categories = ['Brand', 'Holiday', 'Person', 'Interest and Hobbies', 'Sport',
-                     'TV and Movies', 'Other', 'Video Game', 'Entities', 'Political',
-                     'Music', 'Book', 'News']
-palette = ['#006D77', '#FBD1A2', '#7DCFB6', '#00B2CA', '#1D4E89', '#F79256', '#aed9e0', '#b8f2e6', '#faf3dd', '#ffa69e',
-           '#FE7F2D', '#FCCA46', '#ED7B84', '#F92A82']
+topics_categories = ['Brand', 'Holiday', 'Person', 'Interest and Hobbies', 'Sport', 'TV and Movies', 'Other',
+                     'Video Game', 'Entities', 'Political', 'Music', 'Book', 'News']
+palette = ['#006D77', '#FBD1A2', '#7DCFB6', '#E29578', '#254E70', '#C33C54', '#FFDDD2', '#004346', '#faf3dd', '#00B2CA', '#37718E', '#aed9e0', '#09BC8A']
 offline_charts = True
 
 
 def retweets_analysis(filenames: list, retweets_filenames: list):
     print("Starting retweeters analysis")
-    df = essemble_dataset(filenames)
-    df_retweets_info = essemble_dataset(retweets_filenames)
+    df = ensemble_dataset(filenames)
+    df_retweets_info = ensemble_dataset(retweets_filenames)
 
     df_analysis = shared_tweets(df, 'topics_cleaned', topics_categories)
     analysis_chart(df_analysis, "topics_cleaned", 'followers mean', "not shared followers mean", "Topics",
@@ -64,7 +61,7 @@ def retweets_analysis(filenames: list, retweets_filenames: list):
                    offline_charts)
 
 
-def essemble_dataset(filenames):
+def ensemble_dataset(filenames):
     df = pd.DataFrame()
     for filename in filenames:
         df_temp = pd.read_csv(filepath_or_buffer=filename, sep=",", engine=None)
