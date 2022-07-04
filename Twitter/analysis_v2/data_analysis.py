@@ -5,16 +5,13 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 import seaborn as sns
-
 sns.set()
 
-DATASETS_PATH = "../../data/processed_tweets/"
 
 months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November',
           'December']
 week_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 day_phases = ['Morning', 'Afternoon', 'Dusk', 'Night', 'Middle of the night']
-day_phases_old = ['Dawn', 'Morning', 'Afternoon', 'Evening', 'Night']
 sentiments = ['Negative', 'Neutral', 'Positive']
 hashtags = [True, False]
 offline_graphs = True
@@ -31,7 +28,7 @@ def analysis(filenames: list):
                          'like_count', 'reply_count', 'sentiment', 'hashtags', 'topics_cleaned']]
 
     # Average retweet and like count per phase of the day
-    df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase'], day_phases_old)
+    df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase'], day_phases)
     analysis_chart(df_analysis, 'day_phase', '% with retweets', '% with likes', 'Day phase', '% with retweets',
                    '% with likes', 'Percentage of retweets and likes during the day', offline_graphs)
     analysis_chart(df_analysis, 'day_phase', 'retweets mean', 'likes mean', 'Day phase', 'Retweets mean', 'Likes mean',
@@ -72,33 +69,29 @@ def analysis(filenames: list):
 
     # Average retweet count per topic during the day
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase', 'topics_cleaned'], day_phases)
-    multi_label_chart(df_analysis, "day_phase", "% with retweets", "year", "topics_cleaned",
-                      "Percentage of retweets by topic during the day",
-                      "Day phase", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", day_phases, "day_phase", "% with retweets", "Day phase",
+                      "% with retweets", "Percentage of retweets by topic during the day", offline_graphs)
 
     # Average retweet count per topic during the week
     df_analysis = retweets_likes_info_by_year(topic_analysis, ['day_of_week', 'topics_cleaned'], week_days)
-    multi_label_chart(df_analysis, "day_of_week", "% with retweets", "year", "topics_cleaned",
-                      "Percentage of retweets by topic during the week",
-                      "Weekday", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", week_days, "day_of_week", "% with retweets", "Weekday",
+                      "% with retweets", "Percentage of retweets by topic during the week", offline_graphs)
 
     # Average retweet count per topic during the year
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['month', 'topics_cleaned'], months)
-    multi_label_chart(df_analysis, "month", "% with retweets", "year", "topics_cleaned",
-                      "Percentage of retweets by topic during the year",
-                      "Month", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", months, "month", "% with retweets", "Months", "% with retweets",
+                      "Percentage of retweets by topic during the year", offline_graphs)
 
     # Impact of hashtags in topic popularity
     df_analysis = retweets_likes_info_by_year(topic_analysis, ['hashtags', 'topics_cleaned'], hashtags)
-    multi_label_chart(df_analysis, "topics_cleaned", "% with retweets", "year", "hashtags",
-                      "Hashtags presence by topic and corresponding % retweet count",
-                      "Topics", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "hashtags", "% with retweets", "hashtags",
+                      "% with retweets", "Tweet sentiment by topic and corresponding % retweet count", offline_graphs)
 
     # Tweet sentiment per topic
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment', 'topics_cleaned'], sentiments)
-    multi_label_chart(df_analysis, "topics_cleaned", "% with retweets", "year", "sentiment",
-                      "Tweet sentiment by topic and corresponding % retweet count",
-                      "Topics", "% with retweets", offline_graphs)
+    multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "sentiment", "% with retweets", "sentiment",
+                         "% with retweets", "Tweet sentiment by topic and corresponding % retweet count",
+                         offline_graphs)
 
 
 def ensemble_dataset(filenames):
@@ -186,7 +179,7 @@ def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, ti
     fig.update_xaxes(title_text=x_name)
     fig.show()
     if offline:
-        plotly.offline.plot(fig, filename='../../data/charts/' + title + '.html')
+        plotly.offline.plot(fig, filename='../data/charts/' + title + '.html')
 
 
 def multi_label_chart(df, category_label, categories, x_col, y_col, x_name, y_name, title, offline):
@@ -200,4 +193,4 @@ def multi_label_chart(df, category_label, categories, x_col, y_col, x_name, y_na
 
     fig.show()
     if offline:
-        plotly.offline.plot(fig, filename='../../data/charts/' + title + '.html')
+        plotly.offline.plot(fig, filename='../data/charts/' + title + '.html')
