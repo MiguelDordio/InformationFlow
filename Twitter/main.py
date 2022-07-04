@@ -4,6 +4,7 @@ from os import walk
 from Twitter.analysis_v2.data_analysis import analysis
 from Twitter.analysis_v2.data_prediction import predict
 from Twitter.analysis_v2.data_processing_transformation import process_and_transform
+from Twitter.analysis_v2.retweets_analysis import retweets_analysis
 from Twitter.fetchers.retweets_fetcher import fetch_retweeters
 from Twitter.fetchers.tweets_fetchers import get_tweets_and_users
 
@@ -83,9 +84,17 @@ def process_data():
 
 def analyze():
     print("Analyzing previously collected and processed data...")
+
     processed_filenames = next(walk(PATH_PROCESSED_TWEETS_FILES), (None, None, []))[2]
     filenames = [PATH_PROCESSED_TWEETS_FILES + "/" + filename for filename in processed_filenames]
+
+    processed_retweets_filenames = next(walk(PATH_PROCESSED_RETWEETS_FILES), (None, None, []))[2]
+    retweets_filenames = [PATH_PROCESSED_RETWEETS_FILES + "/" + filename for filename in processed_retweets_filenames]
+
     analysis(filenames)
+    retweets_analysis(filenames, retweets_filenames)
+
+
 
 
 def do_prediction():

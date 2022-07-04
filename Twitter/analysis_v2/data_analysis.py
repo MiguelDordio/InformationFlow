@@ -18,6 +18,9 @@ day_phases_old = ['Dawn', 'Morning', 'Afternoon', 'Evening', 'Night']
 sentiments = ['Negative', 'Neutral', 'Positive']
 hashtags = [True, False]
 offline_graphs = True
+palette = ['rgb(136, 204, 238)', 'rgb(204, 102, 119)', 'rgb(221, 204, 119)', 'rgb(51, 34, 136)', '#D62728',
+               '#FF9900', 'rgb(170, 68, 153)', 'rgb(68, 170, 153)', 'rgb(153, 153, 51)', 'rgb(136, 34, 85)',
+               'rgb(102, 17, 0)', 'rgb(136, 136, 136)']
 
 
 def analysis(filenames: list):
@@ -158,10 +161,6 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
 
 
 def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, plot_title):
-    palette = ['rgb(136, 204, 238)', 'rgb(204, 102, 119)', 'rgb(221, 204, 119)', 'rgb(51, 34, 136)', '#D62728',
-               '#FF9900', 'rgb(170, 68, 153)', 'rgb(68, 170, 153)', 'rgb(153, 153, 51)', 'rgb(136, 34, 85)',
-               'rgb(102, 17, 0)', 'rgb(136, 136, 136)']
-
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     years = np.sort(df['year'].unique())
     years_count = len(df['year'].unique())

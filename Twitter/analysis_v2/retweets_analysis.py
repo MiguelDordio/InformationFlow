@@ -28,8 +28,10 @@ def retweets_analysis(filenames: list, retweets_filenames: list):
     df = essemble_dataset(filenames)
     df_retweets_info = essemble_dataset(retweets_filenames)
 
-    df_analysis = shared_tweets(df)
-    shared_chart(df_analysis)
+    df_analysis = shared_tweets(df, 'topics_cleaned', topics_categories)
+    analysis_chart(df_analysis, "topics_cleaned", 'followers mean', "not shared followers mean", "Topics",
+                   'Not shared tweet\'s followers mean', 'Shared tweet\'s followers mean',
+                   "Average followers between shared tweets and not shared by topic", offline_charts)
 
     print("Generating analysis tables")
     df_retweeters_chars = retweeters_characteristics(df, df_retweets_info, 0)
@@ -52,7 +54,9 @@ def retweets_analysis(filenames: list, retweets_filenames: list):
     print("Popular retweets (>10) account for only:", (df[df['retweet_count'] > 10].shape[0] /
                                                        df[df['retweet_count'] > 0].shape[0]) * 100, "% of the dataset")
 
-    time_analysis_charts(df_popular_retweeters_chars, "")
+    analysis_chart(df_popular_retweeters_chars, "Topic", 'Average Retweeters Half Time', 'Average Retweeters Total Time',
+                   "Topics", 'Average nº of hours to get 50% retweets', 'Average nº of hours to get all retweets',
+                   "Average number of hours to get the retweets split by median", offline_charts)
 
     analysis_chart(df_popular_retweeters_chars, "Topic", 'Average Retweeters Followers First Half',
                    'Average Retweeters Followers Second Half', "Topics", 'Average Retweeters Followers First Half',
@@ -241,52 +245,27 @@ def get_timing_analysis(df, df_retweets_info, topic_values):
     topic_values['Average Retweeters Followers Second Half'] = avg_second_half_avg_foll
 
 
-def shared_tweets(df):
-    df_test = pd.DataFrame()
-    cols = ['topics_cleaned']
-    cats_sort = topics_categories
+def shared_tweets(source_df, cols, cats_sort):
+    df = pd.DataFrame()
+    for y in np.sort(source_df['year'].unique()):
+        dfy = source_df[source_df['year'] == y]
 
-    for y in np.sort(df['year'].unique()):
-        dfy = df[df['year'] == y]
-        df_all = dfy.groupby(cols).agg(
-            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")},
-            **{"retweets count": pd.NamedAgg(column="retweet_count", aggfunc="count")},
-            **{"retweets mean": pd.NamedAgg(column="retweet_count", aggfunc="mean")},
-            **{"followers": pd.NamedAgg(column="followers", aggfunc="mean")},
-        )
-        df_rets = dfy[dfy['retweet_count'] > 0].groupby(cols).agg(
-            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")},
-            **{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
-        df_likes = dfy[dfy['like_count'] > 0].groupby(cols).agg(
-            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")},
-            **{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
+        df_all = dfy.groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
+        df_shared = dfy[dfy['retweet_count'] > 0].groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
+        df_not_shared = dfy[dfy['retweet_count'] == 0].groupby(cols).agg(**{"followers": pd.NamedAgg(column="followers", aggfunc="mean")})
 
         df_all = df_all.reindex(cats_sort).reset_index()
-        df_rets = df_rets.reindex(cats_sort).reset_index()
-        df_likes = df_likes.reindex(cats_sort).reset_index()
+        df_rets = df_shared.reindex(cats_sort).reset_index()
+        df_not_shared = df_not_shared.reindex(cats_sort).reset_index()
 
-        df_all['year'] = [str(y) for _ in range(len(cats_sort))]
-        df_all['sum'] = [df_all["count " + cols[0]].sum() for _ in range(df_all.shape[0])]
-        df_all['% ' + cols[0]] = (df_all["count " + cols[0]] / df_all['sum']) * 100
-        df_all['% with retweets'] = np.round((df_rets["count " + cols[0]] / df_all["count " + cols[0]]) * 100, 2)
-        df_all['% with likes'] = np.round((df_likes["count " + cols[0]] / df_all["count " + cols[0]]) * 100, 2)
-
+        df_all['Year'] = [str(y) for _ in range(len(cats_sort))]
+        df_all['not shared followers mean'] = df_not_shared['followers']
         df_all['followers mean'] = df_all['followers']
         df_all['shared followers mean'] = df_rets['followers']
 
-        df_test = pd.concat([df_test, pd.DataFrame.from_records(df_all)])
+        df = pd.concat([df, pd.DataFrame.from_records(df_all)])
 
-    return df_test[
-        ['year', cols[0], "count " + cols[0], '% ' + cols[0], '% with retweets', '% with likes', 'followers mean',
-         'shared followers mean']]
-
-
-def shared_chart(df):
-    fig = px.bar(df, x="topics_cleaned", y="shared followers mean", color="year", color_discrete_sequence=palette,
-                 barmode="group",
-                 title="Average followers between shared tweets and not shared by topic", width=900, height=500)
-    fig.update_yaxes(title_text="Average followers count")
-    fig.show()
+    return df[['Year', cols, 'not shared followers mean', 'followers mean', 'shared followers mean']]
 
 
 def retweeters_info_chart(df, x_col_categories, x_col, y_col, title, offline):
