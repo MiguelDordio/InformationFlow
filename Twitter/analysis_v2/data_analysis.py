@@ -21,6 +21,7 @@ offline_graphs = True
 
 
 def analysis(filenames: list):
+    print("Starting general analysis")
     df = ensemble_dataset(filenames)
 
     topics_categories = df['topics_cleaned'].unique()[1:]

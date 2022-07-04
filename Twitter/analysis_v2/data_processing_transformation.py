@@ -211,7 +211,7 @@ def get_day_phase(hour):
         return "Night"
 
 
-def time_phases_transformation(df):
+def time_phases_transformation(df, df_retweeters):
     print("(8/10) - Doing variables transformation")
     df['year'] = df['timestamp'].apply(lambda x: x.year)
     df['month'] = df['timestamp'].apply(lambda x: x.strftime('%B'))
@@ -219,7 +219,7 @@ def time_phases_transformation(df):
     df['day_phase'] = df['timestamp'].apply(lambda x: get_day_phase(int(x.hour)))
     df['week_idx'] = df['timestamp'].apply(lambda x: '%s-%s' % (x.year, '{:02d}'.format(x.isocalendar()[1])))
     time_phases_encoding(df)
-    get_users_seniority(df)
+    get_users_seniority(df, df_retweeters)
 
 
 def time_phases_encoding(df):
@@ -232,11 +232,18 @@ def time_phases_encoding(df):
     return df
 
 
-def get_users_seniority(df):
+def get_users_seniority(df, df_retweeters):
     print("         Calculating accounts seniority\n")
+    year = df.iloc[0]['timestamp'].year
+
     df['created_at'] = pd.to_datetime(df['created_at'], utc=True).dt.strftime("%Y-%m-%d")
     df['created_at'] = pd.to_datetime(df['created_at'])
-    df['seniority'] = df['created_at'].apply(lambda x: relativedelta(datetime.datetime.now(), x).years)
+    df['seniority'] = [relativedelta(datetime.datetime(year, 12, 31), x).years for x in df['created_at']]
+
+    df_retweeters['created_at'] = pd.to_datetime(df_retweeters['created_at'], utc=True).dt.strftime("%Y-%m-%d")
+    df_retweeters['created_at'] = pd.to_datetime(df_retweeters['created_at'])
+    df_retweeters['seniority'] = [relativedelta(datetime.datetime(year, 12, 31), x).years for x in df_retweeters['created_at']]
+
     return df
 
 
@@ -287,7 +294,7 @@ def process_and_transform(tweets_path, user_path, retweets_path, retweeters_path
 
     df = merge_tweets_and_users(df_tweets, df_users)
 
-    time_phases_transformation(df)
+    time_phases_transformation(df, df_retweets_info)
 
     df = outliers(df)
 
