@@ -30,7 +30,7 @@ def define_program_usage():
     print("3 - process")
     print("4 - analyze")
     print("5 - predict")
-    option_selected = input("Enter the desired option: ")
+    option_selected = int(input("Enter the desired option: "))
 
     if option_selected == 1:
         run_all()
@@ -92,7 +92,7 @@ def analyze():
     retweets_filenames = [PATH_PROCESSED_RETWEETS_FILES + "/" + filename for filename in processed_retweets_filenames]
 
     analysis(filenames)
-    retweets_analysis(filenames, retweets_filenames)
+    #retweets_analysis(filenames, retweets_filenames)
 
 
 
