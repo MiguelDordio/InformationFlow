@@ -8,8 +8,8 @@ from sklearn.preprocessing import LabelEncoder
 from dateutil.relativedelta import relativedelta
 
 
-FINAL_DATASET = "../../data/processed_tweets/tweets_"
-FINAL_DATASET_RETWEETS_INFO = "../../data/processed_retweets/retweets_info_"
+FINAL_DATASET = "../data/processed_tweets/tweets_"
+FINAL_DATASET_RETWEETS_INFO = "../data/processed_retweets/retweets_info_"
 
 
 def load_datasets(tweets_path, user_path):
