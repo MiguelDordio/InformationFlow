@@ -11,7 +11,7 @@ import seaborn as sns
 
 sns.set()
 
-CHARTS_PATH = '../data/charts/retweets_analysis'
+CHARTS_PATH = '../data/charts/retweets_analysis/'
 
 topics_categories = ['Brand', 'Holiday', 'Person', 'Interest and Hobbies', 'Sport', 'TV and Movies', 'Other',
                      'Video Game', 'Entities', 'Political', 'Music', 'Book', 'News']
@@ -285,9 +285,8 @@ def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, ti
     for i in range(years_count):
         year = years[i]
         dfy = df[df['Year'] == year]
-        fig.add_trace(go.Bar(x=dfy[x_col], y=dfy[y_bar], text=list(map(str, dfy[y_bar].tolist())),
-                             name=y_bar_name + ' ' + str(year), marker_color=palette[i], width=0.28,
-                             textposition='inside'), secondary_y=False)
+        fig.add_trace(go.Bar(x=dfy[x_col], y=dfy[y_bar], name=y_bar_name + ' ' + str(year), marker_color=palette[i],
+                             width=0.28, textposition='inside'), secondary_y=False)
         fig.add_trace(go.Scatter(x=dfy[x_col], y=dfy[y_line], name=y_line_name + ' ' + str(year),
                                  marker_color=palette[i + years_count]), secondary_y=True)
 
