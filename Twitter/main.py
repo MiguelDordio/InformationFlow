@@ -79,7 +79,10 @@ def process_data():
     retweeters_filenames = next(walk(PATH_RAW_RETWEETERS_FILES), (None, None, []))[2]
 
     for filenames in zip(tweets_filenames, users_filenames, retweets_filenames, retweeters_filenames):
-        process_and_transform(filenames[0], filenames[1], filenames[2], filenames[3])
+        process_and_transform(PATH_RAW_TWEETS_FILES + '/' + filenames[0],
+                              PATH_RAW_USERS_FILES + '/' + filenames[1],
+                              PATH_RAW_RETWEETS_FILES + '/' + filenames[2],
+                              PATH_RAW_RETWEETERS_FILES + '/' + filenames[3])
 
 
 def analyze():
