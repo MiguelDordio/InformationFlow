@@ -87,7 +87,7 @@ def analysis(filenames: list):
     # Impact of hashtags in topic popularity
     df_analysis = retweets_likes_info_by_year(topic_analysis, ['hashtags', 'topics_cleaned'], hashtags)
     multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "hashtags", "% with retweets", "hashtags",
-                      "% with retweets", "Tweet sentiment by topic and corresponding % retweet count", offline_graphs)
+                      "% with retweets", "Hashtags presence by topic and corresponding % retweet count", offline_graphs)
 
     # Tweet sentiment per topic
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment', 'topics_cleaned'], sentiments)
