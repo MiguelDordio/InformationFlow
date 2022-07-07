@@ -26,9 +26,9 @@ def retweets_analysis(filenames: list, retweets_filenames: list):
     df_retweets_info = ensemble_dataset(retweets_filenames)
 
     df_analysis = shared_tweets(df, 'topics_cleaned', topics_categories)
-    analysis_chart(df_analysis, "topics_cleaned", 'followers mean', "not shared followers mean", "Topics",
-                   'Not shared tweet\'s followers mean', 'Shared tweet\'s followers mean',
-                   "Average followers between shared tweets and not shared by topic", offline_charts)
+    analysis_chart(df_analysis, "topics_cleaned", 'shared followers mean', "not shared followers mean", "Topics",
+                   'Shared tweet\'s followers mean', 'Not shared tweet\'s followers mean',
+                   "Followers mean between shared tweets and not shared by topic", offline_charts)
 
     print("Generating analysis tables")
     df_retweeters_chars = retweeters_characteristics(df, df_retweets_info, 0)
@@ -97,25 +97,11 @@ def get_avg_retweets_time(df_retweets_info, og_tweet_time, og_tweet_id):
     return mean(t)
 
 
-def get_avg_retweets_account_age_old(df_retweets_info, og_tweet_id):
-    matches = df_retweets_info[df_retweets_info['ref_tweed_id'] == og_tweet_id]
-    if matches.shape[0] == 0:
-        return -1
-    t = [(datetime.datetime.now().replace(tzinfo=datetime.timezone.utc) - created_at.replace(
-        tzinfo=datetime.timezone.utc)) / np.timedelta64(1, 'Y') for created_at in matches['created_at']]
-    return mean(t)
-
-
-def get_avg_retweets_account_age(df_retweets_info, og_tweet_id):
-    matches = df_retweets_info[df_retweets_info['ref_tweed_id'] == og_tweet_id]
-    if matches.shape[0] == 0:
-        return -1
-
-    ages = pd.to_datetime(matches['created_at'], utc=True).dt.strftime("%Y-%m-%d")
-    ages = pd.to_datetime(ages)
-    ages = ages.apply(lambda x: relativedelta(datetime.datetime.now(), x).years)
-
-    return ages.mean()
+def get_avg_retweets_account_age(df, df_retweets_info):
+    df_tmp = df.rename({'tweet_id': 'match_id'}, axis=1)
+    df_retweets_info_tmp = df_retweets_info.rename({'ref_tweed_id': 'match_id'}, axis=1)
+    res = pd.merge(df_tmp[['match_id']], df_retweets_info_tmp[['match_id', 'seniority']], how='inner', on=['match_id'])
+    return res['seniority'].mean()
 
 
 def get_retweets_half_time(df_retweets_info, og_tweet_time, og_tweet_id):
@@ -187,11 +173,10 @@ def get_basic_analysis(df, df_retweets_info, topic_values):
     df['avg_retweeters_followers'] = [get_avg_followers_retweets(df_retweets_info, x) for x in zip(df['tweet_id'])]
     df['avg_retweeters_time'] = [get_avg_retweets_time(df_retweets_info, x, y) for x, y in
                                  zip(df['timestamp'], df['tweet_id'])]
-    df['avg_retweeters_account_age'] = [get_avg_retweets_account_age(df_retweets_info, x) for x in df['tweet_id']]
 
     avg_retweeters_followers = df[df['avg_retweeters_followers'] != -1]['avg_retweeters_followers'].mean()
     avg_retweeters_time = df[df['avg_retweeters_time'] != -1]['avg_retweeters_time'].mean()
-    avg_retweeters_account_age = df[df['avg_retweeters_account_age'] != -1]['avg_retweeters_account_age'].mean()
+    avg_retweeters_account_age = get_avg_retweets_account_age(df, df_retweets_info)
 
     if pd.isna(avg_retweeters_followers):
         avg_retweeters_followers = 0
@@ -204,7 +189,7 @@ def get_basic_analysis(df, df_retweets_info, topic_values):
 
     topic_values['Average Retweeters Followers'] = int(avg_retweeters_followers)
     topic_values['Average Retweets Time'] = int(avg_retweeters_time)
-    topic_values['Average Retweeters Account Age'] = avg_retweeters_account_age
+    topic_values['Average Retweeters Account Age'] = int(avg_retweeters_account_age)
 
 
 def get_timing_analysis(df, df_retweets_info, topic_values):
