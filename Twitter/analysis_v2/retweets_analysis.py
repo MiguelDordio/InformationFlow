@@ -73,11 +73,11 @@ def ensemble_dataset(filenames):
     return df.reset_index()
 
 
-def get_avg_followers_retweets(df_retweets_info, og_tweet_id):
-    matches = df_retweets_info[df_retweets_info['ref_tweed_id'] == og_tweet_id]
-    if matches.shape[0] == 0:
-        return -1
-    return int(matches['followers'].mean())
+def get_avg_followers_retweets(df, df_retweets_info):
+    df_tmp = df.rename({'tweet_id': 'match_id'}, axis=1)
+    df_retweets_info_tmp = df_retweets_info.rename({'ref_tweed_id': 'match_id'}, axis=1)
+    res = pd.merge(df_tmp[['match_id']], df_retweets_info_tmp[['match_id', 'seniority']], how='inner', on=['match_id'])
+    return res['followers'].mean()
 
 
 def time_diff_from_original_old(og_tweet_time, retweet_time):
@@ -170,11 +170,10 @@ def retweeters_characteristics(df, df_retweets_info, min_retweets):
 
 
 def get_basic_analysis(df, df_retweets_info, topic_values):
-    df['avg_retweeters_followers'] = [get_avg_followers_retweets(df_retweets_info, x) for x in zip(df['tweet_id'])]
     df['avg_retweeters_time'] = [get_avg_retweets_time(df_retweets_info, x, y) for x, y in
                                  zip(df['timestamp'], df['tweet_id'])]
 
-    avg_retweeters_followers = df[df['avg_retweeters_followers'] != -1]['avg_retweeters_followers'].mean()
+    avg_retweeters_followers = get_avg_followers_retweets(df, df_retweets_info)
     avg_retweeters_time = df[df['avg_retweeters_time'] != -1]['avg_retweeters_time'].mean()
     avg_retweeters_account_age = get_avg_retweets_account_age(df, df_retweets_info)
 
