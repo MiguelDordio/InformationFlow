@@ -39,7 +39,12 @@ def define_program_usage():
     elif option_selected == 3:
         process_data()
     elif option_selected == 4:
-        analyze()
+        print("Please specify the type of analysis")
+        print("1 - Full analysis")
+        print("2 - Tweets analysis")
+        print("3 - Retweets analysis")
+        option_selected = int(input("Enter the desired option: "))
+        analyze(option_selected)
     elif option_selected == 5:
         predict()
     else:
@@ -49,7 +54,7 @@ def define_program_usage():
 def run_all():
     get_raw_tweets_retweets()
     process_data()
-    analyze()
+    analyze(1)
     do_prediction()
 
 
@@ -85,7 +90,7 @@ def process_data():
                               PATH_RAW_RETWEETERS_FILES + '/' + filenames[3])
 
 
-def analyze():
+def analyze(type):
     print("Analyzing previously collected and processed data...")
 
     processed_filenames = next(walk(PATH_PROCESSED_TWEETS_FILES), (None, None, []))[2]
@@ -94,8 +99,13 @@ def analyze():
     processed_retweets_filenames = next(walk(PATH_PROCESSED_RETWEETS_FILES), (None, None, []))[2]
     retweets_filenames = [PATH_PROCESSED_RETWEETS_FILES + "/" + filename for filename in processed_retweets_filenames]
 
-    analysis(filenames)
-    retweets_analysis(filenames, retweets_filenames)
+    if type == 1:
+        analysis(filenames)
+        retweets_analysis(filenames, retweets_filenames)
+    elif type == 2:
+        analysis(filenames)
+    elif type == 3:
+        retweets_analysis(filenames, retweets_filenames)
 
 
 
