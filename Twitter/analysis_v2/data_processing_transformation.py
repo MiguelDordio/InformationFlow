@@ -176,7 +176,7 @@ def has_hashtags(text):
 
 def popularity(df):
     print("(6/10) - Popularity classification\n")
-    df['popularity'] = [tweet_popularity_label(ret, qou) for ret, qou in zip(df['retweet_count'], df['quote_count'])]
+    df['popularity'] = [0 if retweets == 0 else 1 for retweets in df['retweet_count']]
 
 
 def tweet_popularity_label(retweet_count, quote_count):
