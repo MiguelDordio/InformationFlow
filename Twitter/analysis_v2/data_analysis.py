@@ -25,6 +25,8 @@ def analysis(filenames: list):
     print("Starting general analysis")
     df = ensemble_dataset(filenames)
 
+    get_data_characteristics(df)
+
     topics_categories = df['topics_cleaned'].unique()[1:]
     tweet_analysis = df[['text', 'year', 'day_phase', 'day_of_week', 'month', 'retweet_count', 'quote_count',
                          'like_count', 'reply_count', 'sentiment', 'hashtags', 'topics_cleaned']]
@@ -107,6 +109,17 @@ def ensemble_dataset(filenames):
         df_temp = df_temp.drop(['index', 'Unnamed: 0'], axis=1)
         df = pd.concat([df, pd.DataFrame.from_records(df_temp)])
     return df.reset_index()
+
+
+def get_data_characteristics(df):
+    print("\nData characteristics")
+    print("Average nº of tweets per day of the week:", int(df['day_of_week'].value_counts().mean()))
+    print("Nº of tweets with known topics {:d} and are {:0.2f}% of the data".format(
+        df[~df['topics_cleaned'].isna()].shape[0],
+        (df[~df['topics_cleaned'].isna()].shape[0] / df.shape[0]) * 100))
+    print("Nº of tweets do collect retweeters information:",
+          df[(~df['topics_cleaned'].isna()) & df['retweet_count'] > 0].shape[0])
+    print("{:0.2f}% have retweets\n".format((df[df['retweet_count'] > 0].shape[0] / df.shape[0]) * 100))
 
 
 def retweets_likes_info_by_year(source_df, cols, cats_sort):
