@@ -5,6 +5,7 @@ import datetime
 import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 from dateutil.relativedelta import relativedelta
 
 
@@ -225,11 +226,22 @@ def time_phases_transformation(df, df_retweeters):
 def time_phases_encoding(df):
     print("         Doing variables encoding")
     cols_to_transform = ['day_phase', 'day_of_week', 'month', 'year', 'sentiment', 'verified', 'hashtags']
+
+    one_hot_encoder(df, cols_to_transform)
+
     for col in cols_to_transform:
         enc = LabelEncoder()
         enc.fit(df[col])
         df[col + '_enc'] = enc.transform(df[col])
     return df
+
+
+def one_hot_encoder(df, cols_to_transform):
+    ohc = OneHotEncoder(sparse=False, drop='first')
+    ohc_feat = ohc.fit_transform(df[cols_to_transform])
+    ohc_feat_names = ohc.get_feature_names_out()
+    ohc_df = pd.DataFrame(ohc_feat, index=df.index, columns=ohc_feat_names)
+    df[ohc_feat_names] = ohc_df[ohc_feat_names]
 
 
 def get_users_seniority(df, df_retweeters):
