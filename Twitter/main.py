@@ -3,6 +3,7 @@ from os import walk
 
 from Twitter.analysis_v2.data_analysis import analysis
 from Twitter.analysis_v2.data_prediction import predict
+from Twitter.analysis_v2.data_prediction_ml import train_test_model
 from Twitter.analysis_v2.data_processing_transformation import process_and_transform
 from Twitter.analysis_v2.retweets_analysis import retweets_analysis
 from Twitter.fetchers.retweets_fetcher import fetch_retweeters
@@ -29,7 +30,8 @@ def define_program_usage():
     print("2 - collect")
     print("3 - process")
     print("4 - analyze")
-    print("5 - predict")
+    print("5 - create, train and test model")
+    print("6 - predict")
     option_selected = int(input("Enter the desired option: "))
 
     if option_selected == 1:
@@ -46,7 +48,9 @@ def define_program_usage():
         option_selected = int(input("Enter the desired option: "))
         analyze(option_selected)
     elif option_selected == 5:
-        predict()
+        create_train_test_model()
+    elif option_selected == 6:
+        do_prediction()
     else:
         print("Program closed!")
 
@@ -108,6 +112,10 @@ def analyze(type):
         retweets_analysis(filenames, retweets_filenames)
 
 
+def create_train_test_model():
+    print("This step can take a lot of time...")
+    print("Creating, training and testing new model...")
+    train_test_model()
 
 
 def do_prediction():
