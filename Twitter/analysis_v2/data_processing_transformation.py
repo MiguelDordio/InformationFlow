@@ -219,29 +219,33 @@ def time_phases_transformation(df, df_retweeters):
     df['day_of_week'] = df['timestamp'].apply(lambda x: x.strftime('%A'))
     df['day_phase'] = df['timestamp'].apply(lambda x: get_day_phase(int(x.hour)))
     df['week_idx'] = df['timestamp'].apply(lambda x: '%s-%s' % (x.year, '{:02d}'.format(x.isocalendar()[1])))
-    time_phases_encoding(df)
+    categorical_vars_encoding(df)
     get_users_seniority(df, df_retweeters)
 
 
-def time_phases_encoding(df):
+def categorical_vars_encoding(df):
     print("         Doing variables encoding")
+    one_hot_encoder(df)
+    label_encoder(df)
+
+
+def one_hot_encoder(df):
+    print("                  Running OneHotEncoder")
+    cols_to_encode = ['day_phase', 'day_of_week', 'month', 'year', 'topics_ids', 'sentiment', 'verified', 'hashtags']
+    ohc = OneHotEncoder(sparse=False, drop='first')
+    ohc_feat = ohc.fit_transform(df[cols_to_encode])
+    ohc_feat_names = ohc.get_feature_names_out()
+    ohc_df = pd.DataFrame(ohc_feat, index=df.index, columns=ohc_feat_names).astype(int)
+    df[ohc_feat_names] = ohc_df[ohc_feat_names]
+
+
+def label_encoder(df):
+    print("                  Running LabelEncoder")
     cols_to_transform = ['day_phase', 'day_of_week', 'month', 'year', 'sentiment', 'verified', 'hashtags']
-
-    one_hot_encoder(df, cols_to_transform)
-
     for col in cols_to_transform:
         enc = LabelEncoder()
         enc.fit(df[col])
         df[col + '_enc'] = enc.transform(df[col])
-    return df
-
-
-def one_hot_encoder(df, cols_to_transform):
-    ohc = OneHotEncoder(sparse=False, drop='first')
-    ohc_feat = ohc.fit_transform(df[cols_to_transform])
-    ohc_feat_names = ohc.get_feature_names_out()
-    ohc_df = pd.DataFrame(ohc_feat, index=df.index, columns=ohc_feat_names)
-    df[ohc_feat_names] = ohc_df[ohc_feat_names]
 
 
 def get_users_seniority(df, df_retweeters):
