@@ -50,7 +50,7 @@ def train_test_model():
     X_train, X_test = format_cleaned_df(X_train, X_test, X_train_num_scaled, X_test_num_scaled, cat_to_keep, num_to_keep)
     X_train, y_train = balance_dataset(X_train, y_train)
 
-    best_base_model = compare_base_models(models, X_train, y_train, scoring, num_folds)
+    best_base_model, _, _ = compare_base_models(models, X_train, y_train, scoring, num_folds)
 
     param_grid = {
         'bootstrap': [True],
@@ -189,7 +189,7 @@ def compare_base_models(models, X_train, y_train, scoring, num_folds):
         print(msg)
 
     index_min = max(range(len(results_means)), key=results_means.__getitem__)
-    return models[index_min]
+    return models[index_min], names, results
 
 
 def find_best_params(model, param_grid, X_train, y_train):

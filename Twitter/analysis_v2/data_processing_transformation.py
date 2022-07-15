@@ -231,7 +231,8 @@ def categorical_vars_encoding(df):
 
 def one_hot_encoder(df):
     print("                  Running OneHotEncoder")
-    cols_to_encode = ['day_phase', 'day_of_week', 'month', 'year', 'topics_ids', 'sentiment', 'verified', 'hashtags']
+    cols_to_encode = ['day_phase', 'day_of_week', 'month', 'year', 'topics_cleaned', 'sentiment', 'verified',
+                      'hashtags']
     ohc = OneHotEncoder(sparse=False, drop='first')
     ohc_feat = ohc.fit_transform(df[cols_to_encode])
     ohc_feat_names = ohc.get_feature_names_out()
