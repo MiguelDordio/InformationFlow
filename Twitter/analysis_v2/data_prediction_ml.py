@@ -234,7 +234,7 @@ def train_evaluate_save(model, X_train, y_train, X_test, y_test):
     predictions = model.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
     print('Model Performance')
-    print('Accuracy: {:0.2f}%'.format(accuracy))
+    print('Accuracy: {:0.2f}%'.format(accuracy * 100))
     labels = ["Não popular", "Popular"]
     print(classification_report(y_test, predictions, target_names=labels))
     joblib.dump(model, '../data/models/popularity.joblib')

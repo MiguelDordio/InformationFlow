@@ -177,6 +177,25 @@ def retweets_likes_info_by_year(source_df, cols, cats_sort):
                    'retweets mean', 'likes mean']]
 
 
+def reach_by_topic(source_df, cols, cats_sort):
+    df = pd.DataFrame()
+    for y in np.sort(source_df['year'].unique()):
+        dfy = source_df[source_df['year'] == y]
+        df_all = dfy.groupby(cols).agg(
+            **{"count " + cols[0]: pd.NamedAgg(column=cols[0], aggfunc="count")},
+            **{"reach mean": pd.NamedAgg(column="reach", aggfunc="mean")}).round(2)
+
+        df_all = df_all.reindex(cats_sort).reset_index()
+        df_all['year'] = [y for _ in range(len(cats_sort))]
+
+        df_all['sum'] = [df_all["count " + cols[0]].sum() for _ in range(df_all.shape[0])]
+        df_all['% ' + cols[0]] = (df_all["count " + cols[0]] / df_all['sum']) * 100
+
+        df = pd.concat([df, pd.DataFrame.from_records(df_all)])
+
+    return df[['year', cols[0], "count " + cols[0], '% ' + cols[0], 'reach mean']]
+
+
 def analysis_chart(df, x_col, y_bar, y_line, x_name, y_bar_name, y_line_name, title, offline):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     years = np.sort(df['year'].unique())
