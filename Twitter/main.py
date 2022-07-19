@@ -2,7 +2,6 @@ import datetime
 from os import walk
 
 from Twitter.analysis_v2.data_analysis import analysis
-from Twitter.analysis_v2.data_prediction import predict
 from Twitter.analysis_v2.data_prediction_ml import train_test_model
 from Twitter.analysis_v2.data_processing_transformation import process_and_transform
 from Twitter.analysis_v2.retweets_analysis import retweets_analysis
@@ -48,9 +47,14 @@ def define_program_usage():
         option_selected = int(input("Enter the desired option: "))
         analyze(option_selected)
     elif option_selected == 5:
-        create_train_test_model()
-    elif option_selected == 6:
-        do_prediction()
+        print("Please specify if you want to do hyper parameter optimization")
+        print("0 - No")
+        print("1 - Yes")
+        option_selected = int(input("Enter the desired option: "))
+        if option_selected == 0:
+            create_train_test_model(False)
+        else:
+            create_train_test_model(True)
     else:
         print("Program closed!")
 
@@ -59,7 +63,7 @@ def run_all():
     get_raw_tweets_retweets()
     process_data()
     analyze(1)
-    do_prediction()
+    create_train_test_model(True)
 
 
 def get_raw_tweets_retweets():
@@ -94,7 +98,7 @@ def process_data():
                               PATH_RAW_RETWEETERS_FILES + '/' + filenames[3])
 
 
-def analyze(type):
+def analyze(analysis_type):
     print("Analyzing previously collected and processed data...")
 
     processed_filenames = next(walk(PATH_PROCESSED_TWEETS_FILES), (None, None, []))[2]
@@ -103,24 +107,18 @@ def analyze(type):
     processed_retweets_filenames = next(walk(PATH_PROCESSED_RETWEETS_FILES), (None, None, []))[2]
     retweets_filenames = [PATH_PROCESSED_RETWEETS_FILES + "/" + filename for filename in processed_retweets_filenames]
 
-    if type == 1:
+    if analysis_type == 1:
         analysis(filenames)
         retweets_analysis(filenames, retweets_filenames)
-    elif type == 2:
+    elif analysis_type == 2:
         analysis(filenames)
-    elif type == 3:
+    elif analysis_type == 3:
         retweets_analysis(filenames, retweets_filenames)
 
 
-def create_train_test_model():
-    print("This step can take a lot of time...")
+def create_train_test_model(parameter_optimization):
     print("Creating, training and testing new model...")
-    train_test_model()
-
-
-def do_prediction():
-    print("Doing predictions with previously collected and processed data...")
-    predict()
+    train_test_model("../data/processed_tweets/", parameter_optimization)
 
 
 if __name__ == '__main__':

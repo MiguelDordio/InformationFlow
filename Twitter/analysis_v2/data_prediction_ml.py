@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 import plotly
 import seaborn as sns
+
 sns.set()
 from sklearn.linear_model import LassoCV
 from sklearn.feature_selection import RFE
@@ -14,7 +15,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from imblearn.over_sampling import SMOTE
 from collections import Counter
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, ExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, \
+    ExtraTreesClassifier
 from sklearn.model_selection import GridSearchCV, KFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, classification_report
@@ -23,12 +25,11 @@ from sklearn.feature_selection import f_classif
 from sklearn.feature_selection import SelectKBest
 from matplotlib import pyplot as plt
 
-
-BASE_FOLDER = "../data/processed_tweets/"
 CHARTS_PATH = '../data/charts/predictions/'
 
 num_vars = ['followers', 'following', 'tweet_count', 'seniority']
-cat_vars = ['topics_ids', 'sentiment_enc', 'hashtags_enc', 'verified_enc', 'day_phase_enc', 'day_of_week_enc', 'month_enc']
+cat_vars = ['topics_ids', 'sentiment_enc', 'hashtags_enc', 'verified_enc', 'day_phase_enc', 'day_of_week_enc',
+            'month_enc']
 models = [('LR', LogisticRegression(solver='lbfgs')), ('LDA', LinearDiscriminantAnalysis()),
           ('CART', DecisionTreeClassifier()), ('NB', GaussianNB()), ('AB', AdaBoostClassifier()),
           ('GBM', GradientBoostingClassifier()), ('RFC', RandomForestClassifier(n_estimators=100)),
@@ -38,8 +39,8 @@ seed = 7
 scoring = 'accuracy'
 
 
-def train_test_model():
-    train_df, test_df = get_test_train_data(False)
+def train_test_model(base_folder_path, parameter_optimization):
+    train_df, test_df = get_test_train_data(base_folder_path, False)
 
     train_df = prepare_model_data(train_df)
     test_df = prepare_model_data(test_df)
@@ -48,27 +49,14 @@ def train_test_model():
     X_train_cats, X_train_num_scaled, X_test_num_scaled = standardize(X_train, X_test)
 
     cat_to_keep, num_to_keep = feature_selection(X_train_cats, X_train_num_scaled, y_train)
-    X_train, X_test = format_cleaned_df(X_train, X_test, X_train_num_scaled, X_test_num_scaled, cat_to_keep, num_to_keep)
+    X_train, X_test = format_cleaned_df(X_train, X_test, X_train_num_scaled, X_test_num_scaled, cat_to_keep,
+                                        num_to_keep)
     X_train, y_train = balance_dataset(X_train, y_train)
 
     best_base_model, names, results = compare_base_models(models, X_train, y_train, scoring, num_folds)
     algorithm_comparison_chart('Comparação dos modelos base', 'modelos', 'precisão (0-1)', names, results, True)
 
-    param_grid = {
-        'bootstrap': [True],
-        'max_depth': [80, 90, 100, 110],
-        'max_features': [2, 3],
-        'min_samples_leaf': [3, 4, 5],
-        'min_samples_split': [8, 10, 12],
-        'n_estimators': [100, 200, 400]
-    }
-    best_params = find_best_params(best_base_model[1], param_grid, X_train, y_train)
-    optimized_model = best_base_model[1](bootstrap=best_params['bootstrap'], max_depth=best_params['max_depth'],
-                                         max_features=best_params['max_features'],
-                                         min_samples_leaf=best_params['min_samples_leaf'],
-                                         min_samples_split=best_params['min_samples_split'],
-                                         n_estimators=best_params['n_estimators'])
-
+    optimized_model = get_optimized_model(best_base_model[1], parameter_optimization, X_train, y_train)
     train_evaluate_save(optimized_model, X_train, y_train, X_test, y_test)
 
 
@@ -143,7 +131,8 @@ def lasso_analysis(num_feat_to_keep, X_train, y_train):
     print("Lasso analysis")
     reg = LassoCV()
     reg.fit(X_train, y_train)
-    coef = pd.Series(abs(reg.coef_), index=X_train.columns)  #Check the coefficients associated with each of the variables
+    coef = pd.Series(abs(reg.coef_),
+                     index=X_train.columns)  # Check the coefficients associated with each of the variables
     features_to_keep = coef.nlargest(3).index
     add_feature_selection_res(num_feat_to_keep, features_to_keep, 'Lasso Regression')
 
@@ -156,7 +145,7 @@ def rfe_analysis(num_feat_to_keep, X_train, y_train):
     add_feature_selection_res(num_feat_to_keep, features_to_keep, 'RFE')
 
 
-def format_cleaned_df( X_train, X_test, X_train_num_scaled, X_test_num_scaled, cat_to_keep, num_to_keep):
+def format_cleaned_df(X_train, X_test, X_train_num_scaled, X_test_num_scaled, cat_to_keep, num_to_keep):
     print("Formating cleaned dataframe")
     X_train = X_train[cat_to_keep].copy()
     X_train[num_to_keep] = X_train_num_scaled[num_to_keep]
@@ -211,6 +200,28 @@ def algorithm_comparison_chart(title, x_label, y_label, models_names, results, o
         plotly.offline.plot(fig, filename=CHARTS_PATH + title + '.html')
 
 
+def get_optimized_model(model, parameter_optimization, X_train, y_train):
+    param_grid = {
+        'bootstrap': [True],
+        'max_depth': [80, 90, 100, 110],
+        'max_features': [2, 3],
+        'min_samples_leaf': [3, 4, 5],
+        'min_samples_split': [8, 10, 12],
+        'n_estimators': [100, 200, 400]
+    }
+
+    if parameter_optimization:
+        best_params = find_best_params(model, param_grid, X_train, y_train)
+        return model(bootstrap=best_params['bootstrap'], max_depth=best_params['max_depth'],
+                                             max_features=best_params['max_features'],
+                                             min_samples_leaf=best_params['min_samples_leaf'],
+                                             min_samples_split=best_params['min_samples_split'],
+                                             n_estimators=best_params['n_estimators'])
+    else:
+        return model(bootstrap=True, max_depth=110, max_features=3, min_samples_leaf=3,
+                                             min_samples_split=8, n_estimators=200)
+
+
 def find_best_params(model, param_grid, X_train, y_train):
     grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=3)
     grid_result = grid_search.fit(X_train, y_train)
@@ -230,21 +241,21 @@ def train_evaluate_save(model, X_train, y_train, X_test, y_test):
     return accuracy
 
 
-def get_test_train_data(sort):
-    filenames = next(walk(BASE_FOLDER), (None, None, []))[2]
+def get_test_train_data(folder_path, sort):
+    filenames = next(walk(folder_path), (None, None, []))[2]
     print(filenames)
 
     train_df, test_df = pd.DataFrame(), pd.DataFrame()
     if len(filenames) == 2:
-        train_df = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[0], sep=",")
-        test_df = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[1], sep=",")
+        train_df = pd.read_csv(filepath_or_buffer=folder_path + filenames[0], sep=",")
+        test_df = pd.read_csv(filepath_or_buffer=folder_path + filenames[1], sep=",")
     elif len(filenames) > 2:
-        test_df = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[len(filenames) - 1], sep=",")
+        test_df = pd.read_csv(filepath_or_buffer=folder_path + filenames[len(filenames) - 1], sep=",")
         test_df = convert_and_sort_time(test_df, sort)
 
         train_df = pd.DataFrame()
         for i in range(len(filenames) - 1):
-            df_temp = pd.read_csv(filepath_or_buffer=BASE_FOLDER + filenames[i], sep=",")
+            df_temp = pd.read_csv(filepath_or_buffer=folder_path + filenames[i], sep=",")
             df_temp = convert_and_sort_time(df_temp, sort)
             train_df = pd.concat([train_df, pd.DataFrame.from_records(df_temp)])
 
