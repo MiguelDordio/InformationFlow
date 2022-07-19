@@ -3,10 +3,9 @@ from os import walk
 import joblib
 import pandas as pd
 import datetime
+import plotly
 import seaborn as sns
-from matplotlib import pyplot as plt
 sns.set()
-#%%
 from sklearn.linear_model import LassoCV
 from sklearn.feature_selection import RFE
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -18,13 +17,15 @@ from collections import Counter
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier, ExtraTreesClassifier
 from sklearn.model_selection import GridSearchCV, KFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import accuracy_score, classification_report
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import f_classif
 from sklearn.feature_selection import SelectKBest
+from matplotlib import pyplot as plt
 
 
-BASE_FOLDER = "../../data/processed_tweets/"
+BASE_FOLDER = "../data/processed_tweets/"
+CHARTS_PATH = '../data/charts/predictions/'
 
 num_vars = ['followers', 'following', 'tweet_count', 'seniority']
 cat_vars = ['topics_ids', 'sentiment_enc', 'hashtags_enc', 'verified_enc', 'day_phase_enc', 'day_of_week_enc', 'month_enc']
@@ -50,7 +51,8 @@ def train_test_model():
     X_train, X_test = format_cleaned_df(X_train, X_test, X_train_num_scaled, X_test_num_scaled, cat_to_keep, num_to_keep)
     X_train, y_train = balance_dataset(X_train, y_train)
 
-    best_base_model, _, _ = compare_base_models(models, X_train, y_train, scoring, num_folds)
+    best_base_model, names, results = compare_base_models(models, X_train, y_train, scoring, num_folds)
+    algorithm_comparison_chart('Comparação dos modelos base', 'modelos', 'precisão (0-1)', names, results, True)
 
     param_grid = {
         'bootstrap': [True],
@@ -58,13 +60,15 @@ def train_test_model():
         'max_features': [2, 3],
         'min_samples_leaf': [3, 4, 5],
         'min_samples_split': [8, 10, 12],
-        'n_estimators': [100, 200, 400, 600]
+        'n_estimators': [100, 200, 400]
     }
     best_params = find_best_params(best_base_model[1], param_grid, X_train, y_train)
-    #  # {'bootstrap': True, 'max_depth': 80, 'max_features': 2, 'min_samples_leaf': 3, 'min_samples_split': 8, 'n_estimators': 200}
-    optimized_model = best_base_model[1](best_params['bootstrap'], best_params['max_depth'], best_params['max_features'],
-                       best_params['min_samples_leaf'], best_params['min_samples_split'],
-                       best_params['n_estimators'])
+    optimized_model = best_base_model[1](bootstrap=best_params['bootstrap'], max_depth=best_params['max_depth'],
+                                         max_features=best_params['max_features'],
+                                         min_samples_leaf=best_params['min_samples_leaf'],
+                                         min_samples_split=best_params['min_samples_split'],
+                                         n_estimators=best_params['n_estimators'])
+
     train_evaluate_save(optimized_model, X_train, y_train, X_test, y_test)
 
 
@@ -101,7 +105,7 @@ def feature_selection(X_train_cats, X_train_num_scaled, y_train):
         axis=1).astype(int)
 
     cat_to_keep = cat_feat_to_keep[cat_feat_to_keep['Discard Nr'] < 1].index.tolist()
-    num_to_keep = num_feat_to_keep[num_feat_to_keep['Discard Nr'] < 2].index.to_list()
+    num_to_keep = num_feat_to_keep[num_feat_to_keep['Discard Nr'] < 3].index.to_list()
     return cat_to_keep, num_to_keep
 
 
@@ -113,7 +117,7 @@ def add_feature_selection_res(df_res, features_to_keep, name):
 
 def chi_analysis(num_feat_to_keep, X_train, y_train):
     print("Chi-square analysis")
-    chi2_features = SelectKBest(chi2, k=6)
+    chi2_features = SelectKBest(chi2, k=10)
     chi2_features.fit_transform(X_train, y_train)
     features_to_keep = chi2_features.get_feature_names_out()
     add_feature_selection_res(num_feat_to_keep, features_to_keep, 'Chi2')
@@ -177,7 +181,7 @@ def compare_base_models(models, X_train, y_train, scoring, num_folds):
     df_res = pd.DataFrame(columns=['model', 'score_accuracy'])
     for name, model in models:
         kfold = KFold(n_splits=num_folds)
-        cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring=scoring)
+        cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring=scoring, n_jobs=-1)
 
         for res in cv_results:
             df_res.loc[len(df_res.index)] = [name, res]
@@ -192,8 +196,23 @@ def compare_base_models(models, X_train, y_train, scoring, num_folds):
     return models[index_min], names, results
 
 
+def algorithm_comparison_chart(title, x_label, y_label, models_names, results, offline):
+    fig = plt.figure()
+    fig.suptitle(title)
+    ax = fig.add_subplot(111)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title(title)
+    plt.boxplot(results)
+    ax.set_xticklabels(models_names)
+    plt.figure(figsize=(25, 18))
+    plt.show()
+    if offline:
+        plotly.offline.plot(fig, filename=CHARTS_PATH + title + '.html')
+
+
 def find_best_params(model, param_grid, X_train, y_train):
-    grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=2)
+    grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=5, n_jobs=-1, verbose=3)
     grid_result = grid_search.fit(X_train, y_train)
     print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
     return grid_result.best_params_
@@ -205,7 +224,9 @@ def train_evaluate_save(model, X_train, y_train, X_test, y_test):
     accuracy = accuracy_score(y_test, predictions)
     print('Model Performance')
     print('Accuracy: {:0.2f}%'.format(accuracy))
-    joblib.dump(model, '../../data/models/popularity.joblib')
+    labels = ["Não popular", "Popular"]
+    print(classification_report(y_test, predictions, target_names=labels))
+    joblib.dump(model, '../data/models/popularity.joblib')
     return accuracy
 
 
