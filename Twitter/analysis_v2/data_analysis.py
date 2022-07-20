@@ -29,7 +29,7 @@ def analysis(filenames: list):
 
     topics_categories = df['topics_cleaned'].unique()[1:]
     tweet_analysis = df[['text', 'year', 'day_phase', 'day_of_week', 'month', 'retweet_count', 'quote_count',
-                         'like_count', 'reply_count', 'sentiment', 'hashtags', 'topics_cleaned']]
+                         'like_count', 'reply_count', 'sentiment', 'hashtags', 'topics_cleaned', 'reach']]
 
     # Average retweet and like count per phase of the day
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase'], day_phases)
@@ -87,6 +87,11 @@ def analysis(filenames: list):
     multi_label_chart(df_analysis, "topics_cleaned", months, "month", "% with retweets", "Meses",
                       '% tweets com retweets', "Percentagem de tweets com retweets por tópico durante o ano",
                       offline_graphs)
+
+    # Average tweet reach per topic
+    df_analysis = reach_by_topic(tweet_analysis, ['topics_cleaned'], topics_categories)
+    multi_label_chart(df_analysis, 'topics_cleaned', topics_categories, 'topics_cleaned', 'reach mean', 'Tópicos',
+                      'Média de alcance (nº pessoas)', 'Alcance médio dos tweets por tópico', offline_graphs)
 
     # Impact of hashtags in topic popularity
     df_analysis = retweets_likes_info_by_year(tweet_analysis, ['hashtags', 'topics_cleaned'], hashtags)
