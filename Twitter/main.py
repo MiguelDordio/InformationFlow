@@ -1,12 +1,12 @@
 import datetime
 from os import walk
 
-from Twitter.analysis_v2.data_analysis import analysis
-from Twitter.analysis_v2.data_prediction_ml import train_test_model
-from Twitter.analysis_v2.data_processing_transformation import process_and_transform
-from Twitter.analysis_v2.retweets_analysis import retweets_analysis
-from Twitter.fetchers.retweets_fetcher import fetch_retweeters
-from Twitter.fetchers.tweets_fetchers import get_tweets_and_users
+from Twitter.analysis.data_analysis import analysis
+from Twitter.analysis.data_prediction_ml import train_test_model
+from Twitter.analysis.data_processing_transformation import process_and_transform
+from Twitter.analysis.retweets_analysis import retweets_analysis
+from Twitter.data_fetchers.retweets_fetcher import fetch_retweeters
+from Twitter.data_fetchers.tweets_fetchers import get_tweets_and_users
 
 
 PATH_RAW_TWEETS_FILES = "../data/tweets/"
