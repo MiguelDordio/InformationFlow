@@ -108,10 +108,17 @@ def analyze(analysis_type):
     retweets_filenames = [PATH_PROCESSED_RETWEETS_FILES + "/" + filename for filename in processed_retweets_filenames]
 
     if analysis_type == 1:
-        analysis(filenames)
+        analysis(filenames, False)
         retweets_analysis(filenames, retweets_filenames)
     elif analysis_type == 2:
-        analysis(filenames)
+        print("Please specify if you want only covid-19 analysis")
+        print("1 - Full analysis")
+        print("2 - Only covid-19 analysis")
+        option_selected = int(input("Enter the desired option: "))
+        if option_selected == 1:
+            analysis(filenames, False)
+        else:
+            analysis(filenames, True)
     elif analysis_type == 3:
         retweets_analysis(filenames, retweets_filenames)
 
