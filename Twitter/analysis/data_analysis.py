@@ -46,35 +46,43 @@ def analysis(filenames: list, only_covid_analysis):
         # Average retweet and like count per phase of the day
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase'], day_phases)
         get_correlations_2_vars(df_analysis, 'retweets mean', 'likes mean')
-        analysis_chart(df_analysis, 'day_phase', '% with retweets', '% with likes', 'Fases do dia', '% tweets com retweets',
-                       '% tweets com gostos', 'Percentagem de tweets com retweets e gostos durante o dia', offline_graphs)
-        analysis_chart(df_analysis, 'day_phase', 'retweets mean', 'likes mean', 'Fases do dia', 'Média de retweets',
-                       'Média de gostos', 'Média de retweets e gostos durante o dia', offline_graphs)
+        analysis_chart(df_analysis, 'day_phase', '% with retweets', '% with likes',
+                       'Fases do dia', '% tweets com partilhas (retweets)', '% tweets com gostos (likes)',
+                       'Percentagem de tweets com partilhas (retweets) e gostos (likes) durante o dia', offline_graphs)
+        analysis_chart(df_analysis, 'day_phase', 'retweets mean', 'likes mean',
+                       'Fases do dia', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                       'Média de partilhas (retweets) e gostos (likes) durante o dia', offline_graphs)
 
         # Average retweet and like count during the week
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_of_week'], week_days)
         get_correlations_2_vars(df_analysis, 'retweets mean', 'likes mean')
-        analysis_chart(df_analysis, 'day_of_week', '% with retweets', '% with likes', 'Dias da semana',
-                       '% tweets com retweets', '% tweets com gostos', 'Percentagem de tweets com retweets e gostos durante'
-                                                                       ' a semana', offline_graphs)
-        analysis_chart(df_analysis, 'day_of_week', 'retweets mean', 'likes mean', 'Dias da semana', 'Média de retweets',
-                       'Média de gostos', 'Média de retweets e gostos durante a semana', offline_graphs)
+        analysis_chart(df_analysis, 'day_of_week', '% with retweets', '% with likes',
+                       'Dias da semana', '% tweets com partilhas (retweets)', '% tweets com gostos (likes)',
+                       'Percentagem de tweets com partilhas (retweets) e gostos (likes) durante a semana',
+                       offline_graphs)
+        analysis_chart(df_analysis, 'day_of_week', 'retweets mean', 'likes mean',
+                       'Dias da semana', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                       'Média de partilhas (retweets) e gostos (likes) durante a semana', offline_graphs)
 
         # Average retweet count per month
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['month'], months)
         get_correlations_2_vars(df_analysis, 'retweets mean', 'likes mean')
-        analysis_chart(df_analysis, 'month', '% with retweets', '% with likes', 'Meses', '% tweets com retweets',
-                       '% tweets com gostos', 'Percentagem de tweets com retweets e gostos durante o ano', offline_graphs)
-        analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean', 'Meses', 'Média de retweets',
-                       'Média de gostos', 'Média de retweets e gostos durante o ano', offline_graphs)
+        analysis_chart(df_analysis, 'month', '% with retweets', '% with likes',
+                       'Meses', '% tweets com partilhas (retweets)', '% tweets com gostos (likes)',
+                       'Percentagem de tweets com partilhas (retweets) e gostos (likes) durante o ano', offline_graphs)
+        analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean',
+                       'Meses', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                       'Média de partilhas (retweets) e gostos (likes) durante o ano', offline_graphs)
 
         # Tweets performance by sentiment
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment'], sentiments)
         get_correlations_2_vars(df_analysis, 'retweets mean', 'likes mean')
-        analysis_chart(df_analysis, 'sentiment', '% with retweets', '% with likes', 'Sentimentos', '% tweets com retweets',
-                       '% tweets com gostos', 'Percentagem de tweets com retweets e gostos por sentimento', offline_graphs)
-        analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean', 'Sentimentos', 'Média de retweets',
-                       'Média de gostos', 'Média de retweets e likes por sentimento', offline_graphs)
+        analysis_chart(df_analysis, 'sentiment', '% with retweets', '% with likes',
+                       'Sentimentos', '% tweets com partilhas (retweets)', '% tweets com gostos (likes)',
+                       'Percentagem de tweets com partilhas (retweets) e gostos (likes) por sentimento', offline_graphs)
+        analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean',
+                       'Sentimentos', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                       'Média de partilhas (retweets) e gostos (likes) por sentimento', offline_graphs)
 
         # Tweets performance by topic
         print("Analyzing tweets performance by topic")
@@ -82,82 +90,95 @@ def analysis(filenames: list, only_covid_analysis):
         # Performance of each topic in retweets and likes
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['topics_cleaned'], topics_categories)
         get_correlations_2_vars(df_analysis, 'retweets mean', 'likes mean')
-        analysis_chart(df_analysis, 'topics_cleaned', '% with retweets', '% with likes', 'Tópicos', '% tweets com retweets',
-                       '% tweets com gostos', 'Percentagem de tweets com retweets e gostos por tópicos', offline_graphs)
-        analysis_chart(df_analysis, 'topics_cleaned', 'retweets mean', 'likes mean', 'Tópicos', 'Média de retweets',
-                       'Média de gostos', 'Média de retweets e gostos por tópicos', offline_graphs)
+        analysis_chart(df_analysis, 'topics_cleaned', '% with retweets', '% with likes',
+                       'Tópicos', '% tweets com partilhas (retweets)', '% tweets com gostos (likes)',
+                       'Percentagem de tweets com partilhas (retweets) e gostos (likes) por tópicos', offline_graphs)
+        analysis_chart(df_analysis, 'topics_cleaned', 'retweets mean', 'likes mean',
+                       'Tópicos', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                       'Média de partilhas (retweets) e gostos (likes) por tópicos', offline_graphs)
 
         # Average retweet count per topic during the day
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_phase', 'topics_cleaned'], day_phases)
-        multi_label_chart(df_analysis, "topics_cleaned", day_phases, "day_phase", "% with retweets", "Fase do dia",
-                          '% tweets com retweets', "Percentagem de tweets com retweets por tópico durante o dia",
-                          offline_graphs)
-        multi_label_chart_v2(df_analysis, 'year', day_phases, 'day_phase', '% with retweets', "Fase do dia",
-                             '% tweets com retweets', "topics_cleaned", 5, "group", 0.45,
-                             "Percentagem de tweets com retweets por tópico durante o dia", offline_graphs)
+        multi_label_chart(df_analysis, "topics_cleaned", day_phases, "day_phase", "% with retweets",
+                          "Fase do dia", '% tweets com partilhas (retweets)',
+                          "Percentagem de tweets com partilhas (retweets) por tópico durante o dia", offline_graphs)
+        multi_label_chart_v2(df_analysis, 'year', day_phases, 'day_phase', '% with retweets',
+                             "Fase do dia", '% tweets com partilhas (retweets)', "topics_cleaned", 3, "group", 0.155,
+                             "Percentagem de tweets com partilhas (retweets) por tópico durante o dia", offline_graphs,
+                             1250, 1000)
 
         # Average retweet count per topic during the week
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['day_of_week', 'topics_cleaned'], week_days)
-        multi_label_chart(df_analysis, "topics_cleaned", week_days, "day_of_week", "% with retweets", "Dia da semana",
-                          '% tweets com retweets', "Percentagem de tweets com retweets por tópico durante a semana",
-                          offline_graphs)
-        multi_label_chart_v2(df_analysis, 'year', week_days, "day_of_week", '% with retweets', "Dia da semana",
-                             '% tweets com retweets', "topics_cleaned", 4, "group", 0.32,
-                             "Percentagem de tweets com retweets por tópico durante a semana", offline_graphs)
+        multi_label_chart(df_analysis, "topics_cleaned", week_days, "day_of_week", "% with retweets",
+                          "Dia da semana", '% tweets com partilhas (retweets)',
+                          "Percentagem de tweets com partilhas (retweets) por tópico durante a semana", offline_graphs)
+        multi_label_chart_v2(df_analysis, 'year', week_days, "day_of_week", '% with retweets',
+                             "Dia da semana", '% tweets com partilhas (retweets)', "topics_cleaned", 3, "group", 0.121,
+                             "Percentagem de tweets com partilhas (retweets) por tópico durante a semana",
+                             offline_graphs, 1250, 1000)
 
         # Average retweet count per topic during the year
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['month', 'topics_cleaned'], months)
-        multi_label_chart(df_analysis, "topics_cleaned", months, "month", "% with retweets", "Meses",
-                          '% tweets com retweets', "Percentagem de tweets com retweets por tópico durante o ano",
-                          offline_graphs)
-        multi_label_chart_v2(df_analysis, 'year', months, "month", '% with retweets', "Meses",
-                             'tweets com retweets / nº total de tweets = %', "topics_cleaned", 4, "group", 0.32,
-                             "Percentagem de tweets com retweets por tópico durante o ano", offline_graphs)
+        multi_label_chart(df_analysis, "topics_cleaned", months, "month", "% with retweets",
+                          "Meses", '% tweets com retweets',
+                          "Percentagem de tweets com retweets por tópico durante o ano", offline_graphs)
+        multi_label_chart_v2(df_analysis, 'year', months, "month", '% with retweets',
+                             "Meses", '% tweets com partilhas (retweets)', "topics_cleaned",
+                             3, "group", 0.155,
+                             "Percentagem de tweets com partilhas (retweets) por tópico durante o ano",  offline_graphs,
+                             1250, 1000)
 
         # Average tweet reach per topic
         df_analysis = reach_by_topic(tweet_analysis, ['topics_cleaned'], topics_categories)
-        multi_label_chart(df_analysis, 'topics_cleaned', topics_categories, 'topics_cleaned', 'reach mean', 'Tópicos',
-                          'Média de alcance (nº pessoas)', 'Alcance médio dos tweets por tópico', offline_graphs)
-        multi_label_chart_v2(df_analysis, 'year', df_analysis['year'].unique(), 'year', 'reach mean', "Anos",
-                             'Média de alcance (nº pessoas)', "topics_cleaned", 5, "group", 0.32,
-                             'Alcance médio dos tweets por tópico', offline_graphs)
+        multi_label_chart(df_analysis, 'topics_cleaned', topics_categories, 'topics_cleaned', 'reach mean',
+                          'Tópicos', 'Média de alcance (nº pessoas)',
+                          'Alcance médio dos tweets por tópico', offline_graphs)
+        multi_label_chart_v2(df_analysis, 'year', df_analysis['year'].unique(), 'year', 'reach mean',
+                             "Anos", 'Média de alcance (nº pessoas)', "topics_cleaned", 3, "group", 0.12,
+                             'Alcance médio dos tweets por tópico', offline_graphs, 1250, 1000)
 
         # Impact of hashtags in topic popularity
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['hashtags', 'topics_cleaned'], hashtags)
-        multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "hashtags", "% with retweets", "Hashtags",
-                          '% tweets com retweets', 'Presença de hashtags por tópico e correspondente percentagem de tweets '
-                                                   'com retweets', offline_graphs)
-        multi_label_chart_v2(df_analysis, 'year', hashtags, "hashtags", '% with retweets', "Hashtags",
-                             '% tweets com retweets', "topics_cleaned", 5, "group", 0.32,
-                             'Percentagem de tweets com retweets em tweets com ou sem hashtags por tópico',
-                             offline_graphs)
+        multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "hashtags", "% with retweets",
+                          "Hashtags", '% tweets com partilhas (retweets)',
+                          'Presença de hashtags por tópico e correspondente percentagem de tweets com partilhas '
+                          '(retweets)', offline_graphs)
+        multi_label_chart_v2(df_analysis, 'year', hashtags, "hashtags", '% with retweets',
+                             "Hashtags", '% tweets com partilhas (retweets)', "topics_cleaned", 3, "group", 0.118,
+                             'Presença de hashtags por tópico e correspondente percentagem de tweets com partilhas '
+                             '(retweets)', offline_graphs, 1250, 1000)
 
         # Tweet sentiment per topic
         df_analysis = retweets_likes_info_by_year(tweet_analysis, ['sentiment', 'topics_cleaned'], sentiments)
-        multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "sentiment", "% with retweets", "Sentimento",
-                          '% tweets com retweets', "Sentimeto dos tweets por tópicos e correspondente percentagem de tweets"
-                                                   " com retweets", offline_graphs)
-        multi_label_chart_v2(df_analysis, 'year', sentiments, "sentiment", '% with retweets', "Sentimento",
-                             '% tweets com retweets', "topics_cleaned", 5, "group", 0.32,
-                             "Percentagem de tweets com retweets de acordo com o sentimento dos tweets por tópico",
-                             offline_graphs)
+        multi_label_chart(df_analysis, "topics_cleaned", topics_categories, "sentiment", "% with retweets",
+                          "Sentimento", '% tweets com partilhas (retweets)',
+                          "Sentimeto dos tweets por tópicos e correspondente percentagem de tweets com partilhas "
+                          "(retweets)", offline_graphs)
+        multi_label_chart_v2(df_analysis, 'year', sentiments, "sentiment", '% with retweets',
+                             "Sentimento", '% tweets com partilhas (retweets)', "topics_cleaned", 3, "group", 0.12,
+                             "Sentimeto dos tweets por tópicos e correspondente percentagem de tweets com partilhas "
+                             "(retweets)", offline_graphs, 1250, 1000)
 
     # case study: covid-19
     tweets_2020, tweets_2020_covid = get_covid_datasets(tweet_analysis)
     df_analysis = retweets_likes_info_by_year(tweets_2020, ['month'], months)
-    analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean', 'Meses', 'Média de retweets',
-                   'Média de gostos', 'Média de retweets e gostos durante o ano de 2020', offline_graphs)
+    analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean',
+                   'Meses', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                   'Média de partilhas (retweets) e gostos (likes) durante o ano de 2020', offline_graphs)
     df_analysis = retweets_likes_info_by_year(tweets_2020_covid, ['month'], months)
-    analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean', 'Meses', 'Média de retweets',
-                   'Média de gostos', 'Média de retweets e gostos em tweets sobre covid durante o ano de 2020',
+    analysis_chart(df_analysis, 'month', 'retweets mean', 'likes mean',
+                   'Meses', 'Média de retweets', 'Média de gostos',
+                   'Média de partilhas (retweets) e gostos (likes) em tweets sobre covid durante o ano de 2020',
                    offline_graphs)
 
     df_analysis = retweets_likes_info_by_year(tweets_2020, ['sentiment'], sentiments)
-    analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean', 'Sentimentos', 'Média de retweets',
-                   'Média de gostos', 'Média de retweets e likes por sentimento em 2020', offline_graphs)
+    analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean',
+                   'Sentimentos', 'Média de partilhas (retweets)', 'Média de gostos (likes)',
+                   'Média de partilhas (retweets) e gostos (likes) por sentimento em 2020', offline_graphs)
     df_analysis = retweets_likes_info_by_year(tweets_2020_covid, ['sentiment'], sentiments)
-    analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean', 'Sentimentos', 'Média de retweets',
-                   'Média de gostos', 'Média de retweets e likes por sentimento em tweets sobre covid em 2020',
+    analysis_chart(df_analysis, 'sentiment', 'retweets mean', 'likes mean',
+                   'Sentimentos', 'Média de retweets', 'Média de gostos',
+                   'Média de partilhas (retweets) e gostos (likes) por sentimento em tweets sobre covid em 2020',
                    offline_graphs)
 
 
@@ -345,7 +366,7 @@ def multi_label_chart(df, category_label, categories, x_col, y_col, x_name, y_na
 
 
 def multi_label_chart_v2(df, category_label, categories, x_col, y_col, x_name, y_name, facet_col, facet_col_num,
-                         barmode, x_axis_height, title, offline):
+                         barmode, x_axis_height, title, offline, width, height):
     df['year'] = df['year'].astype(str)
     fig = px.bar(df, x=x_col, y=y_col, color=category_label, barmode=barmode, text=y_col, facet_col=facet_col,
                  facet_col_wrap=facet_col_num, color_discrete_sequence=palette,
@@ -357,7 +378,7 @@ def multi_label_chart_v2(df, category_label, categories, x_col, y_col, x_name, y
     fig.add_annotation(x=0.5, y=-x_axis_height, text=x_name, textangle=0, xref="paper", yref="paper",
                        font=dict(size=15))
 
-    fig.update_layout(title_text=title, width=1250, height=450)
+    fig.update_layout(title_text=title, width=width, height=height)
 
     fig.show()
     if offline:
