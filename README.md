@@ -1,4 +1,4 @@
-#Models and Structures for Disseminating Information on Social Networks - Tools and Methods
+# Models and Structures for Disseminating Information on Social Networks - Tools and Methods
 
 This repository contains the code and references to all the data used to support my master's dissertations
 
